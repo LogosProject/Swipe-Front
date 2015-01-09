@@ -8,13 +8,29 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".MainActivity"
+            android:name=".UI.Activities.MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".UI.Activities.ValuesChoiceActivity"
+            android:label="@string/title_activity_values_choice"
+            android:parentActivityName=".UI.Activities.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.logos.mvp.logosswipe.UI.Activities.MainActivity" />
+        </activity>
+        <activity
+            android:name=".UI.Activities.ValuesRankActivity"
+            android:label="@string/title_activity_values_rank" >
+        </activity>
+        <activity
+            android:name=".UI.Activities.SolutionsChoiceActivity"
+            android:label="@string/title_activity_solutions_choice" >
         </activity>
     </application>
 

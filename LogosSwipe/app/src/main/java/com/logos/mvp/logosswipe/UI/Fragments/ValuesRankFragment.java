@@ -1,4 +1,4 @@
-package com.logos.mvp.logosswipe.UI.Fragments;
+package com.logos.mvp.logosswipe.UI.fragments;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 import com.logos.mvp.logosswipe.R;
 
-import com.logos.mvp.logosswipe.UI.Fragments.dummy.DummyContent;
+import com.logos.mvp.logosswipe.UI.fragments.dummy.DummyContent;
 
 /**
  * A fragment representing a list of Items.

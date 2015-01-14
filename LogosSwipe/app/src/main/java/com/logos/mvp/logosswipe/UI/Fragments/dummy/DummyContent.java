@@ -1,4 +1,4 @@
-package com.logos.mvp.logosswipe.UI.Fragments.dummy;
+package com.logos.mvp.logosswipe.UI.fragments.dummy;
 
 import java.util.ArrayList;
 import java.util.HashMap;

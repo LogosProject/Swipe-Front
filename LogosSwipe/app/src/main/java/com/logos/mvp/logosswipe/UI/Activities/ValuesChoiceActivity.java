@@ -1,4 +1,4 @@
-package com.logos.mvp.logosswipe.UI.Activities;
+package com.logos.mvp.logosswipe.UI.activities;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -8,7 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.logos.mvp.logosswipe.R;
-import com.logos.mvp.logosswipe.UI.Fragments.ValuesChoiceFragment;
+import com.logos.mvp.logosswipe.UI.fragments.ValuesChoiceFragment;
 
 public class ValuesChoiceActivity extends ActionBarActivity implements ValuesChoiceFragment.OnFragmentInteractionListener {
 

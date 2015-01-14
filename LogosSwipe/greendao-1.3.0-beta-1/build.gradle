@@ -1,2 +1,0 @@
-configurations.create("default")
-artifacts.add("default", file('greendao-1.3.0-beta-1.jar'))

@@ -1,28 +1,25 @@
 package com.logos.mvp.logosswipe.UI.activities;
 
-import android.support.v7.app.ActionBarActivity;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
+
 
 import com.logos.mvp.logosswipe.R;
 import com.logos.mvp.logosswipe.UI.fragments.SolutionsChoiceFragment;
 
-public class SolutionsChoiceActivity extends ActionBarActivity {
+public class SolutionsChoiceActivity extends ActionBarActivity implements SolutionsChoiceFragment.OnFragmentInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_solutions_choice);
         if (savedInstanceState == null) {
-            SolutionsChoiceFragment fragment = SolutionsChoiceFragment.newInstance("", "");
-            getSupportFragmentManager().beginTransaction()
+            ;
+            getFragmentManager().beginTransaction()
                     //.add(R.id.container, new PlaceholderFragment())
-                    .add(R.id.solutions_choice_container, fragment)
+                    .add(R.id.solutions_choice_container, SolutionsChoiceFragment.newInstance("", ""))
                     .commit();
         }
     }
@@ -50,19 +47,9 @@ public class SolutionsChoiceActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
 
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_solutions_choice, container, false);
-            return rootView;
-        }
+    @Override
+    public void onFragmentInteraction(String id) {
+        
     }
 }

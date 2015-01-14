@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.logos.mvp.logosswipe.R;
+import com.logos.mvp.logosswipe.UI.fragments.SolutionsChoiceFragment;
 
 public class SolutionsChoiceActivity extends ActionBarActivity {
 
@@ -18,8 +19,10 @@ public class SolutionsChoiceActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_solutions_choice);
         if (savedInstanceState == null) {
+            SolutionsChoiceFragment fragment = SolutionsChoiceFragment.newInstance("", "");
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
+                    //.add(R.id.container, new PlaceholderFragment())
+                    .add(R.id.solutions_choice_container, fragment)
                     .commit();
         }
     }

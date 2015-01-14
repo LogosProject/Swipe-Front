@@ -22,7 +22,7 @@ public class ValuesChoiceActivity extends ActionBarActivity implements ValuesCho
 
         ValuesChoiceFragment fragment = ValuesChoiceFragment.newInstance("", "");
 
-        fragmentTransaction.add(R.id.container, fragment);
+        fragmentTransaction.add(R.id.values_choice_container, fragment);
         fragmentTransaction.commit();
     }
 

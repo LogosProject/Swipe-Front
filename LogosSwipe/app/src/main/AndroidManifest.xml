@@ -8,7 +8,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".UI.Activities.ProblemsChoiceActivity"
+            android:name=".UI.activities.ProblemsChoiceActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -16,19 +16,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".UI.Activities.ValuesChoiceActivity"
+            android:name=".UI.activities.ValuesChoiceActivity"
             android:label="@string/title_activity_values_choice"
-            android:parentActivityName=".UI.Activities.ProblemsChoiceActivity" >
+            android:parentActivityName=".UI.activities.ProblemsChoiceActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".UI.Activities.ProblemsChoiceActivity" />
+                android:value=".UI.activities.ProblemsChoiceActivity" />
         </activity>
         <activity
-            android:name=".UI.Activities.ValuesRankActivity"
+            android:name=".UI.activities.ValuesRankActivity"
             android:label="@string/title_activity_values_rank" >
         </activity>
         <activity
-            android:name=".UI.Activities.SolutionsChoiceActivity"
+            android:name=".UI.activities.SolutionsChoiceActivity"
             android:label="@string/title_activity_solutions_choice" >
         </activity>
     </application>

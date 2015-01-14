@@ -1,4 +1,4 @@
-package com.logos.mvp.logosswipe.UI.Fragments;
+package com.logos.mvp.logosswipe.UI.fragments;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -16,10 +16,8 @@ import android.widget.TextView;
 
 import com.logos.mvp.logosswipe.R;
 
-import com.logos.mvp.logosswipe.UI.Activities.SolutionsChoiceActivity;
-import com.logos.mvp.logosswipe.UI.Activities.ValuesChoiceActivity;
-import com.logos.mvp.logosswipe.UI.Activities.ValuesRankActivity;
-import com.logos.mvp.logosswipe.UI.Fragments.dummy.DummyContent;
+import com.logos.mvp.logosswipe.UI.activities.SolutionsChoiceActivity;
+import com.logos.mvp.logosswipe.UI.fragments.dummy.DummyContent;
 
 /**
  * A fragment representing a list of Items.

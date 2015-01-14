@@ -1,4 +1,4 @@
-package com.logos.mvp.logosswipe.UI.Activities;
+package com.logos.mvp.logosswipe.UI.activities;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;

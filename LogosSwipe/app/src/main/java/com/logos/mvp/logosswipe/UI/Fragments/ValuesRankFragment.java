@@ -1,6 +1,7 @@
 package com.logos.mvp.logosswipe.UI.fragments;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
@@ -9,11 +10,13 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.logos.mvp.logosswipe.R;
 
+import com.logos.mvp.logosswipe.UI.activities.VersusActivity;
 import com.logos.mvp.logosswipe.UI.fragments.dummy.DummyContent;
 
 /**
@@ -48,6 +51,8 @@ public class ValuesRankFragment extends Fragment implements AbsListView.OnItemCl
      * Views.
      */
     private ListAdapter mAdapter;
+
+    private Button buttonValuesRanked;
 
     // TODO: Rename and change types of parameters
     public static ValuesRankFragment newInstance(String param1, String param2) {
@@ -92,6 +97,9 @@ public class ValuesRankFragment extends Fragment implements AbsListView.OnItemCl
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
 
+        buttonValuesRanked = (Button) view.findViewById(R.id.values_rank_selected_button);
+        buttonValuesRanked.setOnClickListener(handlerButtonSelect);
+
         return view;
     }
 
@@ -121,6 +129,13 @@ public class ValuesRankFragment extends Fragment implements AbsListView.OnItemCl
             mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
         }
     }
+
+    View.OnClickListener handlerButtonSelect = new View.OnClickListener() {
+        public void onClick(View v) {
+            Intent nextIntent = new Intent(ValuesRankFragment.this.getActivity(), VersusActivity.class);
+            startActivity(nextIntent);
+        }
+    };
 
     /**
      * The default content for this Fragment has a TextView that is shown when

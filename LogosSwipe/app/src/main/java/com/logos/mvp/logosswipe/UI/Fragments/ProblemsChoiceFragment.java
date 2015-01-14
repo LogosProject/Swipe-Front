@@ -16,8 +16,6 @@ import android.widget.TextView;
 
 import com.logos.mvp.logosswipe.R;
 
-import com.logos.mvp.logosswipe.UI.Activities.MainActivity;
-import com.logos.mvp.logosswipe.UI.Activities.SolutionsChoiceActivity;
 import com.logos.mvp.logosswipe.UI.Activities.ValuesChoiceActivity;
 import com.logos.mvp.logosswipe.UI.Fragments.dummy.DummyContent;
 
@@ -30,7 +28,7 @@ import com.logos.mvp.logosswipe.UI.Fragments.dummy.DummyContent;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class ProblemFragment extends Fragment implements AbsListView.OnItemClickListener {
+public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnItemClickListener {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -58,8 +56,8 @@ public class ProblemFragment extends Fragment implements AbsListView.OnItemClick
     private Button buttonSelect;
 
     // TODO: Rename and change types of parameters
-    public static ProblemFragment newInstance(String param1, String param2) {
-        ProblemFragment fragment = new ProblemFragment();
+    public static ProblemsChoiceFragment newInstance(String param1, String param2) {
+        ProblemsChoiceFragment fragment = new ProblemsChoiceFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -71,7 +69,7 @@ public class ProblemFragment extends Fragment implements AbsListView.OnItemClick
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public ProblemFragment() {
+    public ProblemsChoiceFragment() {
     }
 
     @Override
@@ -92,7 +90,7 @@ public class ProblemFragment extends Fragment implements AbsListView.OnItemClick
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_problem_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_problems_choice_list, container, false);
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
@@ -148,7 +146,7 @@ public class ProblemFragment extends Fragment implements AbsListView.OnItemClick
 
     View.OnClickListener handlerButtonSelect = new View.OnClickListener() {
         public void onClick(View v) {
-            Intent nextIntent = new Intent(ProblemFragment.this.getActivity(), ValuesChoiceActivity.class);
+            Intent nextIntent = new Intent(ProblemsChoiceFragment.this.getActivity(), ValuesChoiceActivity.class);
             startActivity(nextIntent);
         }
     };

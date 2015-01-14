@@ -102,7 +102,7 @@ public class SolutionsChoiceFragment extends Fragment implements AbsListView.OnI
 
         buttonPrevious = (Button) view.findViewById(R.id.previous_button);
         buttonPrevious.setOnClickListener(handlerButtonPrevious);
-        buttonNewValue = (Button) view.findViewById(R.id.new_value_button);
+        buttonNewValue = (Button) view.findViewById(R.id.new_solution_button);
         buttonNewValue.setOnClickListener(handlerButtonNewValue);
         buttonSelect = (Button) view.findViewById(R.id.selected_button);
         buttonSelect.setOnClickListener(handlerButtonSelect);

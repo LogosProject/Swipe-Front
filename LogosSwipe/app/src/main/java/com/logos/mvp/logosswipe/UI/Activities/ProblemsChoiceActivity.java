@@ -8,17 +8,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.logos.mvp.logosswipe.R;
-import com.logos.mvp.logosswipe.UI.Fragments.ProblemFragment;
+import com.logos.mvp.logosswipe.UI.Fragments.ProblemsChoiceFragment;
 
-public class MainActivity extends ActionBarActivity implements ProblemFragment.OnFragmentInteractionListener {
+public class ProblemsChoiceActivity extends ActionBarActivity implements ProblemsChoiceFragment.OnFragmentInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_problems_choice);
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        ProblemFragment fragment = ProblemFragment.newInstance("", "");
+        ProblemsChoiceFragment fragment = ProblemsChoiceFragment.newInstance("", "");
         fragmentTransaction.add(R.id.container, fragment);
         fragmentTransaction.commit();
     }

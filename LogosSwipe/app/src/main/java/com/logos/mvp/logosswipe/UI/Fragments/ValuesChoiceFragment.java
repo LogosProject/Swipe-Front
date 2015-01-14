@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.logos.mvp.logosswipe.R;
 
+
 import com.logos.mvp.logosswipe.UI.activities.SolutionsChoiceActivity;
 import com.logos.mvp.logosswipe.UI.fragments.dummy.DummyContent;
 
@@ -52,11 +53,8 @@ public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItem
      */
     private ListAdapter mAdapter;
 
-
-
-    private Button buttonPrevious;
     private Button buttonNewValue;
-    private Button buttonSelect;
+    private Button buttonValuesSelected;
 
     // TODO: Rename and change types of parameters
     public static ValuesChoiceFragment newInstance(String param1, String param2) {
@@ -92,7 +90,7 @@ public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItem
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_valueschoice_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_values_choice_list, container, false);
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
@@ -101,12 +99,12 @@ public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItem
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
 
-        buttonPrevious = (Button) view.findViewById(R.id.values_choice_previous_button);
-        buttonPrevious.setOnClickListener(handlerButtonPrevious);
         buttonNewValue = (Button) view.findViewById(R.id.values_choice_new_value_button);
         buttonNewValue.setOnClickListener(handlerButtonNewValue);
-        buttonSelect = (Button) view.findViewById(R.id.values_choice_selected_button);
-        buttonSelect.setOnClickListener(handlerButtonSelect);
+
+        buttonValuesSelected = (Button) view.findViewById(R.id.values_choice_selected_button);
+        buttonValuesSelected.setOnClickListener(handlerButtonSelect);
+
         return view;
     }
 
@@ -137,11 +135,6 @@ public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItem
         }
     }
 
-    View.OnClickListener handlerButtonPrevious = new View.OnClickListener() {
-        public void onClick(View v) {
-            // TODO
-        }
-    };
 
     View.OnClickListener handlerButtonNewValue = new View.OnClickListener() {
         public void onClick(View v) {

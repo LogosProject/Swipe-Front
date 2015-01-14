@@ -16,9 +16,12 @@ public class ProblemsChoiceActivity extends ActionBarActivity implements Problem
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_problems_choice);
+
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
         ProblemsChoiceFragment fragment = ProblemsChoiceFragment.newInstance("", "");
+
         fragmentTransaction.add(R.id.container, fragment);
         fragmentTransaction.commit();
     }

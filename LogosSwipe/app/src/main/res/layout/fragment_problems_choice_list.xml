@@ -19,12 +19,12 @@
             android:layout_weight="1"
             android:layout_height="fill_parent"
             android:text="Créer une problématique"
-            android:id="@+id/new_problem_button"/>
+            android:id="@+id/problems_choice_new_problem_button"/>
         <Button
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="fill_parent"
             android:text="Choisir"
-            android:id="@+id/selected_button" />
+            android:id="@+id/problems_choice_selected_button" />
     </LinearLayout>
 </FrameLayout>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.logos.mvp.logosswipe.UI.fragments.SolutionsChoiceFragment">
 
@@ -18,20 +19,14 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="fill_parent"
-            android:text="Précédent"
-            android:id="@+id/previous_button"/>
-        <Button
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="fill_parent"
             android:text="Ajouter une solution"
-            android:id="@+id/new_solution_button" />
+            android:id="@+id/solutions_choice_new_solution_button" />
         <Button
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="fill_parent"
             android:text="Sélectionner"
-            android:id="@+id/selected_button" />
+            android:id="@+id/solutions_choice_selected_button" />
     </LinearLayout>
 
 </FrameLayout>

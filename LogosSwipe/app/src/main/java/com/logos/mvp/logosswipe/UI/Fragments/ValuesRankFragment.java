@@ -1,7 +1,6 @@
 package com.logos.mvp.logosswipe.UI.Fragments;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;
@@ -10,13 +9,11 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.logos.mvp.logosswipe.R;
 
-import com.logos.mvp.logosswipe.UI.Activities.SolutionsChoiceActivity;
 import com.logos.mvp.logosswipe.UI.Fragments.dummy.DummyContent;
 
 /**
@@ -28,7 +25,7 @@ import com.logos.mvp.logosswipe.UI.Fragments.dummy.DummyContent;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItemClickListener {
+public class ValuesRankFragment extends Fragment implements AbsListView.OnItemClickListener {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -52,12 +49,9 @@ public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItem
      */
     private ListAdapter mAdapter;
 
-    private Button buttonNewValue;
-    private Button buttonValuesSelected;
-
     // TODO: Rename and change types of parameters
-    public static ValuesChoiceFragment newInstance(String param1, String param2) {
-        ValuesChoiceFragment fragment = new ValuesChoiceFragment();
+    public static ValuesRankFragment newInstance(String param1, String param2) {
+        ValuesRankFragment fragment = new ValuesRankFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -69,7 +63,7 @@ public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItem
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public ValuesChoiceFragment() {
+    public ValuesRankFragment() {
     }
 
     @Override
@@ -89,7 +83,7 @@ public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItem
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_values_choice_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_item, container, false);
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
@@ -97,12 +91,6 @@ public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItem
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
-
-        buttonNewValue = (Button) view.findViewById(R.id.values_choice_new_value_button);
-        buttonNewValue.setOnClickListener(handlerButtonNewValue);
-
-        buttonValuesSelected = (Button) view.findViewById(R.id.values_choice_selected_button);
-        buttonValuesSelected.setOnClickListener(handlerButtonSelect);
 
         return view;
     }
@@ -133,20 +121,6 @@ public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItem
             mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
         }
     }
-
-
-    View.OnClickListener handlerButtonNewValue = new View.OnClickListener() {
-        public void onClick(View v) {
-            // TODO
-        }
-    };
-
-    View.OnClickListener handlerButtonSelect = new View.OnClickListener() {
-        public void onClick(View v) {
-            Intent nextIntent = new Intent(ValuesChoiceFragment.this.getActivity(), SolutionsChoiceActivity.class);
-            startActivity(nextIntent);
-        }
-    };
 
     /**
      * The default content for this Fragment has a TextView that is shown when

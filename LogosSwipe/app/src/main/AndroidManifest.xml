@@ -7,14 +7,17 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+
         <activity
             android:name=".UI.Activities.ProblemsChoiceActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".UI.Activities.ValuesChoiceActivity"
             android:label="@string/title_activity_values_choice"
@@ -23,14 +26,41 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".UI.Activities.ProblemsChoiceActivity" />
         </activity>
-        <activity
-            android:name=".UI.Activities.ValuesRankActivity"
-            android:label="@string/title_activity_values_rank" >
-        </activity>
+
         <activity
             android:name=".UI.Activities.SolutionsChoiceActivity"
             android:label="@string/title_activity_solutions_choice" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".UI.Activities.ValuesChoiceActivity" />
         </activity>
+
+        <activity
+            android:name=".UI.Activities.ValuesRankActivity"
+            android:label="@string/title_activity_values_rank" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".UI.Activities.SolutionsChoiceActivity" />
+        </activity>
+
+        <activity
+            android:name=".UI.Activities.VersusActivity"
+            android:label="@string/title_activity_versus"
+            android:parentActivityName=".UI.Activities.SolutionsChoiceActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.logos.mvp.logosswipe.UI.Activities.SolutionsChoiceActivity" />
+        </activity>
+
+        <activity
+            android:name=".UI.Activities.FinalSolutionsActivity"
+            android:label="@string/title_activity_final_solutions"
+            android:parentActivityName=".UI.Activities.VersusActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.logos.mvp.logosswipe.UI.Activities.VersusActivity" />
+        </activity>
+
     </application>
 
 </manifest>

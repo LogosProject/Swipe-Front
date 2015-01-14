@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">LogosSwipe</string>
+    <string name="app_name">Logos Swipe</string>
     <string name="title_section1">Section 1</string>
     <string name="title_section2">Section 2</string>
     <string name="title_section3">Section 3</string>
@@ -11,9 +11,11 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="hello_world">Hello world!</string>
-    <string name="title_activity_values_choice">ValuesChoiceActivity</string>
-    <string name="title_activity_values_rank">ValuesRankActivity</string>
-    <string name="title_activity_solutions_choice">SolutionsChoiceActivity</string>
-
+    <string name="title_activity_values_choice">Values Choice</string>
+    <string name="title_activity_values_rank">Values Rank</string>
+    <string name="title_activity_solutions_choice">Solutions Choice</string>
+    <string name="title_activity_versus">Versus</string>
+    <string name="title_activity_final_solutions">Final Solutions</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

@@ -52,8 +52,8 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
     private ListAdapter mAdapter;
 
 
-    private Button buttonNew;
-    private Button buttonSelect;
+    private Button buttonNewProblem;
+    private Button buttonProblemSelected;
 
     // TODO: Rename and change types of parameters
     public static ProblemsChoiceFragment newInstance(String param1, String param2) {
@@ -82,7 +82,6 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
         }
 
         // TODO: Change Adapter to display your content
-
         mAdapter = new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
                 android.R.layout.simple_list_item_1, android.R.id.text1, DummyContent.ITEMS);
     }
@@ -99,12 +98,12 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
 
+        buttonNewProblem = (Button) view.findViewById(R.id.problems_choice_new_problem_button);
+        buttonNewProblem.setOnClickListener(handlerButtonNewProblem);
 
-        buttonSelect = (Button) view.findViewById(R.id.selected_button);
-        buttonSelect.setOnClickListener(handlerButtonSelect);
+        buttonProblemSelected = (Button) view.findViewById(R.id.problems_choice_selected_button);
+        buttonProblemSelected.setOnClickListener(handlerButtonSelect);
 
-        buttonNew = (Button) view.findViewById(R.id.new_problem_button);
-        buttonNew.setOnClickListener(handlerButtonNew);
         return view;
     }
 
@@ -138,7 +137,7 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
     }
 
 
-    View.OnClickListener handlerButtonNew = new View.OnClickListener() {
+    View.OnClickListener handlerButtonNewProblem = new View.OnClickListener() {
         public void onClick(View v) {
             // TODO
         }

@@ -1,18 +1,29 @@
 package com.logos.mvp.logosswipe.UI.Activities;
 
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.logos.mvp.logosswipe.R;
+import com.logos.mvp.logosswipe.UI.Fragments.ValuesChoiceFragment;
 
-public class ValuesChoiceActivity extends ActionBarActivity {
+public class ValuesChoiceActivity extends ActionBarActivity implements ValuesChoiceFragment.OnFragmentInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_values_choice);
+
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        ValuesChoiceFragment fragment = ValuesChoiceFragment.newInstance("", "");
+
+        fragmentTransaction.add(R.id.container, fragment);
+        fragmentTransaction.commit();
     }
 
 
@@ -36,5 +47,10 @@ public class ValuesChoiceActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onFragmentInteraction(String id) {
+
     }
 }

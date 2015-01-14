@@ -2,10 +2,10 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.logos.mvp.logosswipe.UI.Fragments.ProblemsChoiceFragment">
+    tools:context="com.logos.mvp.logosswipe.UI.Fragments.ValuesChoiceFragment">
 
-    <GridView android:id="@android:id/list" android:layout_width="match_parent"
-        android:layout_height="match_parent" android:numColumns="2" />
+    <ListView android:id="@android:id/list" android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <TextView android:id="@android:id/empty" android:layout_width="match_parent"
         android:layout_height="match_parent" android:gravity="center" />
@@ -18,14 +18,16 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="fill_parent"
-            android:text="Créer une problématique"
-            android:id="@+id/new_problem_button"/>
+            android:text="Ajouter une valeur"
+            android:id="@+id/values_choice_new_value_button" />
         <Button
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="fill_parent"
-            android:text="Choisir"
-            android:id="@+id/selected_button" />
+            android:text="Sélectionner"
+            android:id="@+id/values_choice_selected_button" />
     </LinearLayout>
+
+
 
 </FrameLayout>

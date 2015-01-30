@@ -14,6 +14,7 @@ public class SolutionsChoiceActivity extends ActionBarActivity implements Soluti
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_solutions_choice);
+
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
                     .add(R.id.solutions_choice_container, SolutionsChoiceFragment.newInstance("", ""))
@@ -43,7 +44,6 @@ public class SolutionsChoiceActivity extends ActionBarActivity implements Soluti
 
         return super.onOptionsItemSelected(item);
     }
-
 
     @Override
     public void onFragmentInteraction(String id) {

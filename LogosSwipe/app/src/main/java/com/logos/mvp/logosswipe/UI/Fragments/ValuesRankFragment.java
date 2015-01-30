@@ -88,7 +88,7 @@ public class ValuesRankFragment extends Fragment implements AbsListView.OnItemCl
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_item, container, false);
+        View view = inflater.inflate(R.layout.fragment_valuesrank, container, false);
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);

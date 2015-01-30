@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.logos.mvp.logosswipe.R;
 
 import com.logos.mvp.logosswipe.UI.activities.SolutionsChoiceActivity;
+import com.logos.mvp.logosswipe.UI.activities.ValuesRankActivity;
 import com.logos.mvp.logosswipe.UI.fragments.dummy.DummyContent;
 
 /**
@@ -52,10 +53,8 @@ public class SolutionsChoiceFragment extends Fragment implements AbsListView.OnI
      */
     private ListAdapter mAdapter;
 
-
-    private Button buttonPrevious;
-    private Button buttonNewValue;
-    private Button buttonSelect;
+    private Button buttonNewSolution;
+    private Button buttonSolutionsSelected;
 
     // TODO: Rename and change types of parameters
     public static SolutionsChoiceFragment newInstance(String param1, String param2) {
@@ -100,12 +99,11 @@ public class SolutionsChoiceFragment extends Fragment implements AbsListView.OnI
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
 
-        buttonPrevious = (Button) view.findViewById(R.id.previous_button);
-        buttonPrevious.setOnClickListener(handlerButtonPrevious);
-        buttonNewValue = (Button) view.findViewById(R.id.new_solution_button);
-        buttonNewValue.setOnClickListener(handlerButtonNewValue);
-        buttonSelect = (Button) view.findViewById(R.id.selected_button);
-        buttonSelect.setOnClickListener(handlerButtonSelect);
+        buttonNewSolution = (Button) view.findViewById(R.id.solutions_choice_new_solution_button);
+        buttonNewSolution.setOnClickListener(handlerButtonNewValue);
+
+        buttonSolutionsSelected = (Button) view.findViewById(R.id.solutions_choice_selected_button);
+        buttonSolutionsSelected.setOnClickListener(handlerButtonSelect);
         return view;
     }
 
@@ -137,13 +135,6 @@ public class SolutionsChoiceFragment extends Fragment implements AbsListView.OnI
     }
 
 
-
-    View.OnClickListener handlerButtonPrevious = new View.OnClickListener() {
-        public void onClick(View v) {
-            // TODO
-        }
-    };
-
     View.OnClickListener handlerButtonNewValue = new View.OnClickListener() {
         public void onClick(View v) {
             // TODO
@@ -152,7 +143,7 @@ public class SolutionsChoiceFragment extends Fragment implements AbsListView.OnI
 
     View.OnClickListener handlerButtonSelect = new View.OnClickListener() {
         public void onClick(View v) {
-            Intent nextIntent = new Intent(SolutionsChoiceFragment.this.getActivity(), SolutionsChoiceActivity.class); // TODO change next activity
+            Intent nextIntent = new Intent(SolutionsChoiceFragment.this.getActivity(), ValuesRankActivity.class);
             startActivity(nextIntent);
         }
     };

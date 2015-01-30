@@ -5,7 +5,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-
 import com.logos.mvp.logosswipe.R;
 import com.logos.mvp.logosswipe.UI.fragments.SolutionsChoiceFragment;
 
@@ -15,10 +14,9 @@ public class SolutionsChoiceActivity extends ActionBarActivity implements Soluti
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_solutions_choice);
+
         if (savedInstanceState == null) {
-            ;
             getFragmentManager().beginTransaction()
-                    //.add(R.id.container, new PlaceholderFragment())
                     .add(R.id.solutions_choice_container, SolutionsChoiceFragment.newInstance("", ""))
                     .commit();
         }
@@ -47,9 +45,7 @@ public class SolutionsChoiceActivity extends ActionBarActivity implements Soluti
         return super.onOptionsItemSelected(item);
     }
 
-
     @Override
     public void onFragmentInteraction(String id) {
-        
     }
 }

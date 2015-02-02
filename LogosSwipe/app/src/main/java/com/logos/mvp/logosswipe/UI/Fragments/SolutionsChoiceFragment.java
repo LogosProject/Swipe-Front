@@ -1,9 +1,9 @@
 package com.logos.mvp.logosswipe.UI.fragments;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +15,9 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.logos.mvp.logosswipe.R;
-
-import com.logos.mvp.logosswipe.UI.activities.SolutionsChoiceActivity;
 import com.logos.mvp.logosswipe.UI.activities.ValuesRankActivity;
-import com.logos.mvp.logosswipe.UI.fragments.dummy.DummyContent;
+
+import java.util.ArrayList;
 
 /**
  * A fragment representing a list of Items.
@@ -83,8 +82,8 @@ public class SolutionsChoiceFragment extends Fragment implements AbsListView.OnI
         }
 
         // TODO: Change Adapter to display your content
-        mAdapter = new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, DummyContent.ITEMS);
+        mAdapter = new ArrayAdapter<>(getActivity(),
+                android.R.layout.simple_list_item_1, android.R.id.text1, new ArrayList<String>());
     }
 
     @Override
@@ -130,7 +129,7 @@ public class SolutionsChoiceFragment extends Fragment implements AbsListView.OnI
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
+            //mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
         }
     }
 

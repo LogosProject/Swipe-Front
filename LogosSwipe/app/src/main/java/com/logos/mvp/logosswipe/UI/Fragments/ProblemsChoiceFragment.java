@@ -1,23 +1,38 @@
 package com.logos.mvp.logosswipe.UI.fragments;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.logos.mvp.logosswipe.App;
 import com.logos.mvp.logosswipe.R;
-
 import com.logos.mvp.logosswipe.UI.activities.ValuesChoiceActivity;
-import com.logos.mvp.logosswipe.UI.fragments.dummy.DummyContent;
+import com.logos.mvp.logosswipe.UI.adapters.ProblemsChoiceAdapter;
+import com.logos.mvp.logosswipe.network.RequestQueueSingleton;
+import com.logos.mvp.logosswipe.utils.JSONConverter;
+import com.logos.mvp.logosswipe.utils.Requests;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.List;
+
+import de.greenrobot.dao.query.QueryBuilder;
+import greendao.Problem;
+import greendao.ProblemDao;
 
 /**
  * A fragment representing a list of Items.
@@ -28,8 +43,8 @@ import com.logos.mvp.logosswipe.UI.fragments.dummy.DummyContent;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnItemClickListener {
-
+public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnItemClickListener{
+    public static final String TAG="ProblemsChoiceFragment";
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -49,11 +64,10 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
      * The Adapter which will be used to populate the ListView/GridView with
      * Views.
      */
-    private ListAdapter mAdapter;
+    private ProblemsChoiceAdapter mAdapter;
 
 
     private Button buttonNewProblem;
-    private Button buttonProblemSelected;
 
     // TODO: Rename and change types of parameters
     public static ProblemsChoiceFragment newInstance(String param1, String param2) {
@@ -81,9 +95,38 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-        // TODO: Change Adapter to display your content
-        mAdapter = new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, DummyContent.ITEMS);
+        ProblemDao problemDao = App.getInstance().getSession().getProblemDao();
+        QueryBuilder qb = problemDao.queryBuilder();
+        List problems = qb.list();
+
+        mAdapter = new ProblemsChoiceAdapter(getActivity(),
+                R.layout.listview_item_problems_choice, problems);
+        // Instantiate the RequestQueue.
+        JsonArrayRequest jReq = new JsonArrayRequest(Requests.getProblemsUrl(),
+                new Response.Listener<JSONArray>() {
+
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        for (int i = 0; i < response.length(); i++) {
+                            try {
+                                Problem problem = JSONConverter.problemConverter(response.getJSONObject(i));
+                                ProblemDao problemDao = App.getInstance().getSession().getProblemDao();
+                                problemDao.insertOrReplace(problem);
+                            } catch (JSONException e) {
+                                Log.e(TAG,e.toString());
+                            }
+                        }
+                        notifyRefresh();
+                    }
+                }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG,"VolleyError : "+ error.toString());
+
+            }
+        });
+        RequestQueueSingleton.getInstance(this.getActivity().getApplicationContext()).addToRequestQueue(jReq);
     }
 
     @Override
@@ -99,15 +142,27 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
         mListView.setOnItemClickListener(this);
 
         buttonNewProblem = (Button) view.findViewById(R.id.problems_choice_new_problem_button);
-        buttonNewProblem.setOnClickListener(handlerButtonNewProblem);
-
-        buttonProblemSelected = (Button) view.findViewById(R.id.problems_choice_selected_button);
-        buttonProblemSelected.setOnClickListener(handlerButtonSelect);
+        buttonNewProblem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               // Intent nextIntent = new Intent(ProblemsChoiceFragment.this.getActivity(), ValuesChoiceActivity.class);
+               // startActivity(nextIntent);
+            }
+        });
 
         return view;
     }
 
-
+    public void notifyRefresh(){
+        ProblemDao problemDao = App.getInstance().getSession().getProblemDao();
+        QueryBuilder qb = problemDao.queryBuilder();
+        List problems = qb.list();
+        if(mAdapter!=null) {
+            mAdapter.clear();
+            mAdapter.addAll(problems);
+            mAdapter.notifyDataSetChanged();
+        }
+    }
 
     @Override
     public void onAttach(Activity activity) {
@@ -129,26 +184,14 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (null != mListener) {
-            // Notify the active callbacks interface (the activity, if the
-            // fragment is attached to one) that an item has been selected.
-            mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
+        if (null != mAdapter && null != mAdapter.getItem(position)) {
+            Intent nextIntent = new Intent(ProblemsChoiceFragment.this.getActivity(), ValuesChoiceActivity.class);
+            nextIntent.putExtra(ValuesChoiceFragment.ARG_PROBLEM_ID,mAdapter.getItem(position).getId());
+            startActivity(nextIntent);
         }
     }
 
 
-    View.OnClickListener handlerButtonNewProblem = new View.OnClickListener() {
-        public void onClick(View v) {
-            // TODO
-        }
-    };
-
-    View.OnClickListener handlerButtonSelect = new View.OnClickListener() {
-        public void onClick(View v) {
-            Intent nextIntent = new Intent(ProblemsChoiceFragment.this.getActivity(), ValuesChoiceActivity.class);
-            startActivity(nextIntent);
-        }
-    };
 
 
     /**

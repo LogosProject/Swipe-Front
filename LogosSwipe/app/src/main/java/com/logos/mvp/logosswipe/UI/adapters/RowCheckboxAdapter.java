@@ -16,7 +16,7 @@ public class RowCheckboxAdapter extends ArrayAdapter<ClipData.Item> {
     private final Activity context;
 
     public RowCheckboxAdapter(Activity context, List<ClipData.Item> list) {
-        super(context, R.layout.row_with_checkbox, list);
+        super(context, R.layout.listview_item_row_with_checkbox, list);
         this.context = context;
         this.list = list;
     }

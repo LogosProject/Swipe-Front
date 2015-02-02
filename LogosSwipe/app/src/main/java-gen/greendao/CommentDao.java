@@ -1,11 +1,14 @@
 package greendao;
 
+import java.util.List;
+import java.util.ArrayList;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 
 import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.Property;
+import de.greenrobot.dao.internal.SqlUtils;
 import de.greenrobot.dao.internal.DaoConfig;
 
 import greendao.Comment;
@@ -27,7 +30,12 @@ public class CommentDao extends AbstractDao<Comment, Long> {
         public final static Property Name = new Property(1, String.class, "name", false, "NAME");
         public final static Property Datetime = new Property(2, java.util.Date.class, "datetime", false, "DATETIME");
         public final static Property Content = new Property(3, String.class, "content", false, "CONTENT");
+        public final static Property CommentId = new Property(4, Long.class, "commentId", false, "COMMENT_ID");
+        public final static Property VersusId = new Property(5, Long.class, "versusId", false, "VERSUS_ID");
+        public final static Property UserId = new Property(6, Long.class, "userId", false, "USER_ID");
     };
+
+    private DaoSession daoSession;
 
 
     public CommentDao(DaoConfig config) {
@@ -36,6 +44,7 @@ public class CommentDao extends AbstractDao<Comment, Long> {
     
     public CommentDao(DaoConfig config, DaoSession daoSession) {
         super(config, daoSession);
+        this.daoSession = daoSession;
     }
 
     /** Creates the underlying database table. */
@@ -45,7 +54,10 @@ public class CommentDao extends AbstractDao<Comment, Long> {
                 "'_id' INTEGER PRIMARY KEY ," + // 0: id
                 "'NAME' TEXT," + // 1: name
                 "'DATETIME' INTEGER," + // 2: datetime
-                "'CONTENT' TEXT);"); // 3: content
+                "'CONTENT' TEXT," + // 3: content
+                "'COMMENT_ID' INTEGER," + // 4: commentId
+                "'VERSUS_ID' INTEGER," + // 5: versusId
+                "'USER_ID' INTEGER);"); // 6: userId
     }
 
     /** Drops the underlying database table. */
@@ -78,6 +90,27 @@ public class CommentDao extends AbstractDao<Comment, Long> {
         if (content != null) {
             stmt.bindString(4, content);
         }
+ 
+        Long commentId = entity.getCommentId();
+        if (commentId != null) {
+            stmt.bindLong(5, commentId);
+        }
+ 
+        Long versusId = entity.getVersusId();
+        if (versusId != null) {
+            stmt.bindLong(6, versusId);
+        }
+ 
+        Long userId = entity.getUserId();
+        if (userId != null) {
+            stmt.bindLong(7, userId);
+        }
+    }
+
+    @Override
+    protected void attachEntity(Comment entity) {
+        super.attachEntity(entity);
+        entity.__setDaoSession(daoSession);
     }
 
     /** @inheritdoc */
@@ -93,7 +126,10 @@ public class CommentDao extends AbstractDao<Comment, Long> {
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // name
             cursor.isNull(offset + 2) ? null : new java.util.Date(cursor.getLong(offset + 2)), // datetime
-            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3) // content
+            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // content
+            cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4), // commentId
+            cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5), // versusId
+            cursor.isNull(offset + 6) ? null : cursor.getLong(offset + 6) // userId
         );
         return entity;
     }
@@ -105,6 +141,9 @@ public class CommentDao extends AbstractDao<Comment, Long> {
         entity.setName(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
         entity.setDatetime(cursor.isNull(offset + 2) ? null : new java.util.Date(cursor.getLong(offset + 2)));
         entity.setContent(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
+        entity.setCommentId(cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4));
+        entity.setVersusId(cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5));
+        entity.setUserId(cursor.isNull(offset + 6) ? null : cursor.getLong(offset + 6));
      }
     
     /** @inheritdoc */
@@ -130,4 +169,109 @@ public class CommentDao extends AbstractDao<Comment, Long> {
         return true;
     }
     
+    private String selectDeep;
+
+    protected String getSelectDeep() {
+        if (selectDeep == null) {
+            StringBuilder builder = new StringBuilder("SELECT ");
+            SqlUtils.appendColumns(builder, "T", getAllColumns());
+            builder.append(',');
+            SqlUtils.appendColumns(builder, "T0", daoSession.getCommentDao().getAllColumns());
+            builder.append(',');
+            SqlUtils.appendColumns(builder, "T1", daoSession.getVersusDao().getAllColumns());
+            builder.append(',');
+            SqlUtils.appendColumns(builder, "T2", daoSession.getUserDao().getAllColumns());
+            builder.append(" FROM COMMENT T");
+            builder.append(" LEFT JOIN COMMENT T0 ON T.'COMMENT_ID'=T0.'_id'");
+            builder.append(" LEFT JOIN VERSUS T1 ON T.'VERSUS_ID'=T1.'_id'");
+            builder.append(" LEFT JOIN USER T2 ON T.'USER_ID'=T2.'_id'");
+            builder.append(' ');
+            selectDeep = builder.toString();
+        }
+        return selectDeep;
+    }
+    
+    protected Comment loadCurrentDeep(Cursor cursor, boolean lock) {
+        Comment entity = loadCurrent(cursor, 0, lock);
+        int offset = getAllColumns().length;
+
+        Comment comment = loadCurrentOther(daoSession.getCommentDao(), cursor, offset);
+        entity.setComment(comment);
+        offset += daoSession.getCommentDao().getAllColumns().length;
+
+        Versus versus = loadCurrentOther(daoSession.getVersusDao(), cursor, offset);
+        entity.setVersus(versus);
+        offset += daoSession.getVersusDao().getAllColumns().length;
+
+        User user = loadCurrentOther(daoSession.getUserDao(), cursor, offset);
+        entity.setUser(user);
+
+        return entity;    
+    }
+
+    public Comment loadDeep(Long key) {
+        assertSinglePk();
+        if (key == null) {
+            return null;
+        }
+
+        StringBuilder builder = new StringBuilder(getSelectDeep());
+        builder.append("WHERE ");
+        SqlUtils.appendColumnsEqValue(builder, "T", getPkColumns());
+        String sql = builder.toString();
+        
+        String[] keyArray = new String[] { key.toString() };
+        Cursor cursor = db.rawQuery(sql, keyArray);
+        
+        try {
+            boolean available = cursor.moveToFirst();
+            if (!available) {
+                return null;
+            } else if (!cursor.isLast()) {
+                throw new IllegalStateException("Expected unique result, but count was " + cursor.getCount());
+            }
+            return loadCurrentDeep(cursor, true);
+        } finally {
+            cursor.close();
+        }
+    }
+    
+    /** Reads all available rows from the given cursor and returns a list of new ImageTO objects. */
+    public List<Comment> loadAllDeepFromCursor(Cursor cursor) {
+        int count = cursor.getCount();
+        List<Comment> list = new ArrayList<Comment>(count);
+        
+        if (cursor.moveToFirst()) {
+            if (identityScope != null) {
+                identityScope.lock();
+                identityScope.reserveRoom(count);
+            }
+            try {
+                do {
+                    list.add(loadCurrentDeep(cursor, false));
+                } while (cursor.moveToNext());
+            } finally {
+                if (identityScope != null) {
+                    identityScope.unlock();
+                }
+            }
+        }
+        return list;
+    }
+    
+    protected List<Comment> loadDeepAllAndCloseCursor(Cursor cursor) {
+        try {
+            return loadAllDeepFromCursor(cursor);
+        } finally {
+            cursor.close();
+        }
+    }
+    
+
+    /** A raw-style query where you can pass any WHERE clause and arguments. */
+    public List<Comment> queryDeep(String where, String... selectionArg) {
+        Cursor cursor = db.rawQuery(getSelectDeep() + where, selectionArg);
+        return loadDeepAllAndCloseCursor(cursor);
+    }
+ 
 }

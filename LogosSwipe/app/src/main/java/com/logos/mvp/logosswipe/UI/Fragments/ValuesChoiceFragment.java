@@ -23,6 +23,7 @@ import com.logos.mvp.logosswipe.R;
 import com.logos.mvp.logosswipe.UI.activities.SolutionsChoiceActivity;
 import com.logos.mvp.logosswipe.UI.adapters.ProblemsChoiceAdapter;
 import com.logos.mvp.logosswipe.UI.adapters.ValueChoiceAdapter;
+import com.logos.mvp.logosswipe.UI.dialogs.DescriptionDialog;
 import com.logos.mvp.logosswipe.network.RequestQueueSingleton;
 import com.logos.mvp.logosswipe.utils.JSONConverter;
 import com.logos.mvp.logosswipe.utils.Requests;
@@ -182,6 +183,12 @@ public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItem
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
             //mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
+            DescriptionDialog dialog = new DescriptionDialog();
+            Bundle bdl = new Bundle();
+            bdl.putString(DescriptionDialog.ARG_TITLE,((ValueChoiceAdapter)parent.getAdapter()).getItem(position).getName());
+            bdl.putString(DescriptionDialog.ARG_DESCRIPTION,((ValueChoiceAdapter)parent.getAdapter()).getItem(position).getDescription());
+            dialog.setArguments(bdl);
+            dialog.show(getFragmentManager(),"AboutDialog");
         }
     }
 

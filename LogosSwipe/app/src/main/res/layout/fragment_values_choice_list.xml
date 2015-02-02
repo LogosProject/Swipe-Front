@@ -5,7 +5,8 @@
     tools:context="com.logos.mvp.logosswipe.UI.fragments.ValuesChoiceFragment">
 
     <ListView android:id="@android:id/list" android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:listSelector="@android:drawable/list_selector_background" />
 
     <TextView android:id="@android:id/empty" android:layout_width="match_parent"
         android:layout_height="match_parent" android:gravity="center" />

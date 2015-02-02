@@ -38,7 +38,7 @@ public class ProblemsChoiceAdapter extends ArrayAdapter<Problem> {
         {
             LayoutInflater inflater = ((Activity)mContext).getLayoutInflater();
             row = inflater.inflate(mLayoutResourceId, parent, false);
-
+            row.setBackgroundColor(this.getContext().getResources().getColor(R.color.default_color));
             holder = new ProblemHolder();
             holder.txtTitle = (TextView)row.findViewById(R.id.txtTitle);
 
@@ -48,10 +48,12 @@ public class ProblemsChoiceAdapter extends ArrayAdapter<Problem> {
         {
             holder = (ProblemHolder)row.getTag();
         }
+
         holder.txtTitle.setText(getItem(position).getName());
 
         return row;
     }
+
     static class ProblemHolder
     {
         TextView txtTitle;

@@ -3,6 +3,7 @@ package com.logos.mvp.logosswipe.UI.fragments;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +13,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.android.volley.Response;
@@ -21,9 +23,12 @@ import com.logos.mvp.logosswipe.App;
 import com.logos.mvp.logosswipe.R;
 import com.logos.mvp.logosswipe.UI.activities.ValuesChoiceActivity;
 import com.logos.mvp.logosswipe.UI.adapters.ProblemsChoiceAdapter;
+import com.logos.mvp.logosswipe.UI.dialogs.CreationDialog;
+import com.logos.mvp.logosswipe.UI.dialogs.DescriptionDialog;
 import com.logos.mvp.logosswipe.network.RequestQueueSingleton;
 import com.logos.mvp.logosswipe.utils.JSONConverter;
 import com.logos.mvp.logosswipe.utils.Requests;
+import com.melnykov.fab.FloatingActionButton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -50,9 +55,6 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     private OnFragmentInteractionListener mListener;
     /**
@@ -67,9 +69,9 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
     private ProblemsChoiceAdapter mAdapter;
 
 
-    private Button buttonNewProblem;
+    private FloatingActionButton buttonNewProblem;
 
-    // TODO: Rename and change types of parameters
+
     public static ProblemsChoiceFragment newInstance(String param1, String param2) {
         ProblemsChoiceFragment fragment = new ProblemsChoiceFragment();
         Bundle args = new Bundle();
@@ -90,21 +92,19 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-
         ProblemDao problemDao = App.getInstance().getSession().getProblemDao();
         QueryBuilder qb = problemDao.queryBuilder();
         List problems = qb.list();
 
         mAdapter = new ProblemsChoiceAdapter(getActivity(),
                 R.layout.listview_item_problems_choice, problems);
+        launchRequest();
+    }
+
+    public void launchRequest(){
         // Instantiate the RequestQueue.
         JsonArrayRequest jReq = new JsonArrayRequest(Requests.getProblemsUrl(),
                 new Response.Listener<JSONArray>() {
-
                     @Override
                     public void onResponse(JSONArray response) {
                         for (int i = 0; i < response.length(); i++) {
@@ -137,18 +137,36 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
         ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
-
+        mListView.setChoiceMode( ListView.CHOICE_MODE_SINGLE);
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
-
-        buttonNewProblem = (Button) view.findViewById(R.id.problems_choice_new_problem_button);
+        buttonNewProblem = (FloatingActionButton) view.findViewById(R.id.bt_new_problem);
         buttonNewProblem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               // Intent nextIntent = new Intent(ProblemsChoiceFragment.this.getActivity(), ValuesChoiceActivity.class);
-               // startActivity(nextIntent);
+                CreationDialog dialog = new CreationDialog();
+                Bundle bdl = new Bundle();
+                bdl.putSerializable(CreationDialog.ARG_MODE, CreationDialog.DIALOG_MODE.PROBLEM);
+                dialog.setArguments(bdl);
+                dialog.setTargetFragment(ProblemsChoiceFragment.this, 0);
+                dialog.show(getFragmentManager(), CreationDialog.TAG);
+
             }
         });
+        buttonNewProblem.attachToListView(mListView);
+
+       /* buttonChoose =(Button) view.findViewById(R.id.problems_choice_selected_button);
+        buttonChoose.setVisibility(View.INVISIBLE);
+        buttonChoose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mListView.getCheckedItemCount()>0) {
+                    Intent nextIntent = new Intent(ProblemsChoiceFragment.this.getActivity(), ValuesChoiceActivity.class);
+                    nextIntent.putExtra(ValuesChoiceFragment.ARG_PROBLEM_ID, mAdapter.getItem(mListView.getCheckedItemPosition()).getId());
+                    startActivity(nextIntent);
+                }
+            }
+        });*/
 
         return view;
     }
@@ -185,9 +203,15 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (null != mAdapter && null != mAdapter.getItem(position)) {
-            Intent nextIntent = new Intent(ProblemsChoiceFragment.this.getActivity(), ValuesChoiceActivity.class);
-            nextIntent.putExtra(ValuesChoiceFragment.ARG_PROBLEM_ID,mAdapter.getItem(position).getId());
-            startActivity(nextIntent);
+            DescriptionDialog dialog = new DescriptionDialog();
+            Bundle bdl = new Bundle();
+            bdl.putString(DescriptionDialog.ARG_TITLE,mAdapter.getItem(position).getName());
+            bdl.putString(DescriptionDialog.ARG_DESCRIPTION, mAdapter.getItem(position).getDescription());
+            dialog.setArguments(bdl);
+            dialog.show(getFragmentManager(), "AboutDialog");
+            mListView.setItemChecked(position, true);
+            mListView.setSelection(position);
+
         }
     }
 

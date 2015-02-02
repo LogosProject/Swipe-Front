@@ -1,11 +1,14 @@
 package greendao;
 
+import java.util.List;
+import java.util.ArrayList;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 
 import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.Property;
+import de.greenrobot.dao.internal.SqlUtils;
 import de.greenrobot.dao.internal.DaoConfig;
 
 import greendao.Versus;
@@ -24,7 +27,11 @@ public class VersusDao extends AbstractDao<Versus, Long> {
     */
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
+        public final static Property Solution1Id = new Property(1, Long.class, "solution1Id", false, "SOLUTION1_ID");
+        public final static Property Solution2Id = new Property(2, Long.class, "solution2Id", false, "SOLUTION2_ID");
     };
+
+    private DaoSession daoSession;
 
 
     public VersusDao(DaoConfig config) {
@@ -33,13 +40,16 @@ public class VersusDao extends AbstractDao<Versus, Long> {
     
     public VersusDao(DaoConfig config, DaoSession daoSession) {
         super(config, daoSession);
+        this.daoSession = daoSession;
     }
 
     /** Creates the underlying database table. */
     public static void createTable(SQLiteDatabase db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "'VERSUS' (" + //
-                "'_id' INTEGER PRIMARY KEY );"); // 0: id
+                "'_id' INTEGER PRIMARY KEY ," + // 0: id
+                "'SOLUTION1_ID' INTEGER," + // 1: solution1Id
+                "'SOLUTION2_ID' INTEGER);"); // 2: solution2Id
     }
 
     /** Drops the underlying database table. */
@@ -57,6 +67,22 @@ public class VersusDao extends AbstractDao<Versus, Long> {
         if (id != null) {
             stmt.bindLong(1, id);
         }
+ 
+        Long solution1Id = entity.getSolution1Id();
+        if (solution1Id != null) {
+            stmt.bindLong(2, solution1Id);
+        }
+ 
+        Long solution2Id = entity.getSolution2Id();
+        if (solution2Id != null) {
+            stmt.bindLong(3, solution2Id);
+        }
+    }
+
+    @Override
+    protected void attachEntity(Versus entity) {
+        super.attachEntity(entity);
+        entity.__setDaoSession(daoSession);
     }
 
     /** @inheritdoc */
@@ -69,7 +95,9 @@ public class VersusDao extends AbstractDao<Versus, Long> {
     @Override
     public Versus readEntity(Cursor cursor, int offset) {
         Versus entity = new Versus( //
-            cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0) // id
+            cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
+            cursor.isNull(offset + 1) ? null : cursor.getLong(offset + 1), // solution1Id
+            cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2) // solution2Id
         );
         return entity;
     }
@@ -78,6 +106,8 @@ public class VersusDao extends AbstractDao<Versus, Long> {
     @Override
     public void readEntity(Cursor cursor, Versus entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
+        entity.setSolution1Id(cursor.isNull(offset + 1) ? null : cursor.getLong(offset + 1));
+        entity.setSolution2Id(cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2));
      }
     
     /** @inheritdoc */
@@ -103,4 +133,102 @@ public class VersusDao extends AbstractDao<Versus, Long> {
         return true;
     }
     
+    private String selectDeep;
+
+    protected String getSelectDeep() {
+        if (selectDeep == null) {
+            StringBuilder builder = new StringBuilder("SELECT ");
+            SqlUtils.appendColumns(builder, "T", getAllColumns());
+            builder.append(',');
+            SqlUtils.appendColumns(builder, "T0", daoSession.getSolutionDao().getAllColumns());
+            builder.append(',');
+            SqlUtils.appendColumns(builder, "T1", daoSession.getSolutionDao().getAllColumns());
+            builder.append(" FROM VERSUS T");
+            builder.append(" LEFT JOIN SOLUTION T0 ON T.'SOLUTION1_ID'=T0.'_id'");
+            builder.append(" LEFT JOIN SOLUTION T1 ON T.'SOLUTION2_ID'=T1.'_id'");
+            builder.append(' ');
+            selectDeep = builder.toString();
+        }
+        return selectDeep;
+    }
+    
+    protected Versus loadCurrentDeep(Cursor cursor, boolean lock) {
+        Versus entity = loadCurrent(cursor, 0, lock);
+        int offset = getAllColumns().length;
+
+        Solution solution1 = loadCurrentOther(daoSession.getSolutionDao(), cursor, offset);
+        entity.setSolution1(solution1);
+        offset += daoSession.getSolutionDao().getAllColumns().length;
+
+        Solution solution2 = loadCurrentOther(daoSession.getSolutionDao(), cursor, offset);
+        entity.setSolution2(solution2);
+
+        return entity;    
+    }
+
+    public Versus loadDeep(Long key) {
+        assertSinglePk();
+        if (key == null) {
+            return null;
+        }
+
+        StringBuilder builder = new StringBuilder(getSelectDeep());
+        builder.append("WHERE ");
+        SqlUtils.appendColumnsEqValue(builder, "T", getPkColumns());
+        String sql = builder.toString();
+        
+        String[] keyArray = new String[] { key.toString() };
+        Cursor cursor = db.rawQuery(sql, keyArray);
+        
+        try {
+            boolean available = cursor.moveToFirst();
+            if (!available) {
+                return null;
+            } else if (!cursor.isLast()) {
+                throw new IllegalStateException("Expected unique result, but count was " + cursor.getCount());
+            }
+            return loadCurrentDeep(cursor, true);
+        } finally {
+            cursor.close();
+        }
+    }
+    
+    /** Reads all available rows from the given cursor and returns a list of new ImageTO objects. */
+    public List<Versus> loadAllDeepFromCursor(Cursor cursor) {
+        int count = cursor.getCount();
+        List<Versus> list = new ArrayList<Versus>(count);
+        
+        if (cursor.moveToFirst()) {
+            if (identityScope != null) {
+                identityScope.lock();
+                identityScope.reserveRoom(count);
+            }
+            try {
+                do {
+                    list.add(loadCurrentDeep(cursor, false));
+                } while (cursor.moveToNext());
+            } finally {
+                if (identityScope != null) {
+                    identityScope.unlock();
+                }
+            }
+        }
+        return list;
+    }
+    
+    protected List<Versus> loadDeepAllAndCloseCursor(Cursor cursor) {
+        try {
+            return loadAllDeepFromCursor(cursor);
+        } finally {
+            cursor.close();
+        }
+    }
+    
+
+    /** A raw-style query where you can pass any WHERE clause and arguments. */
+    public List<Versus> queryDeep(String where, String... selectionArg) {
+        Cursor cursor = db.rawQuery(getSelectDeep() + where, selectionArg);
+        return loadDeepAllAndCloseCursor(cursor);
+    }
+ 
 }

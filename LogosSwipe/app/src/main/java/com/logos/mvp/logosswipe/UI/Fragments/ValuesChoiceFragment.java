@@ -1,9 +1,10 @@
 package com.logos.mvp.logosswipe.UI.fragments;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,11 +15,29 @@ import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.logos.mvp.logosswipe.App;
 import com.logos.mvp.logosswipe.R;
-
-
 import com.logos.mvp.logosswipe.UI.activities.SolutionsChoiceActivity;
-import com.logos.mvp.logosswipe.UI.fragments.dummy.DummyContent;
+import com.logos.mvp.logosswipe.UI.adapters.ProblemsChoiceAdapter;
+import com.logos.mvp.logosswipe.UI.adapters.ValueChoiceAdapter;
+import com.logos.mvp.logosswipe.UI.dialogs.DescriptionDialog;
+import com.logos.mvp.logosswipe.network.RequestQueueSingleton;
+import com.logos.mvp.logosswipe.utils.JSONConverter;
+import com.logos.mvp.logosswipe.utils.Requests;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import de.greenrobot.dao.query.QueryBuilder;
+import greendao.ProblemDao;
+import greendao.Value;
+import greendao.ValueDao;
 
 /**
  * A fragment representing a list of Items.
@@ -31,14 +50,12 @@ import com.logos.mvp.logosswipe.UI.fragments.dummy.DummyContent;
  */
 public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItemClickListener {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    public static final String TAG="ValuesChoiceFragment";
+
+    public static final String ARG_PROBLEM_ID = "ARG_PROBLEM_ID";
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private Long mProblemID;
 
     private OnFragmentInteractionListener mListener;
 
@@ -51,17 +68,15 @@ public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItem
      * The Adapter which will be used to populate the ListView/GridView with
      * Views.
      */
-    private ListAdapter mAdapter;
+    private ValueChoiceAdapter mAdapter;
 
     private Button buttonNewValue;
     private Button buttonValuesSelected;
 
-    // TODO: Rename and change types of parameters
-    public static ValuesChoiceFragment newInstance(String param1, String param2) {
+    public static ValuesChoiceFragment newInstance(Long problemId) {
         ValuesChoiceFragment fragment = new ValuesChoiceFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putLong(ARG_PROBLEM_ID, problemId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -78,13 +93,9 @@ public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItem
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            mProblemID = getArguments().getLong(ARG_PROBLEM_ID);
         }
 
-        // TODO: Change Adapter to display a row_with_checkbox
-        mAdapter = new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, DummyContent.ITEMS);
     }
 
     @Override
@@ -94,7 +105,6 @@ public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItem
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
@@ -104,10 +114,51 @@ public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItem
 
         buttonValuesSelected = (Button) view.findViewById(R.id.values_choice_selected_button);
         buttonValuesSelected.setOnClickListener(handlerButtonSelect);
+        ValueDao valueDao = App.getInstance().getSession().getValueDao();
+        QueryBuilder qb = valueDao.queryBuilder().where(ValueDao.Properties.ProblemId.eq(mProblemID));
+        List values = qb.list();
+        mAdapter = new ValueChoiceAdapter(getActivity(),
+                R.layout.listview_item_values_choice, values);
+        mListView.setAdapter(mAdapter);
+        // Instantiate the RequestQueue.
+        JsonArrayRequest jReq = new JsonArrayRequest(Requests.getValuesProblemUrl(mProblemID),
+                new Response.Listener<JSONArray>() {
 
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        for (int i = 0; i < response.length(); i++) {
+                            try {
+                                Value value = JSONConverter.valueConverter(response.getJSONObject(i),mProblemID);
+                                ValueDao valueDao = App.getInstance().getSession().getValueDao();
+                                valueDao.insertOrReplace(value);
+                                Log.d(TAG,value.getName());
+                            } catch (JSONException e) {
+                                Log.e(TAG, e.toString());
+                            }
+                        }
+                        notifyRefresh();
+                    }
+                }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG,"VolleyError : "+ error.toString());
+
+            }
+        });
+        RequestQueueSingleton.getInstance(this.getActivity().getApplicationContext()).addToRequestQueue(jReq);
         return view;
     }
-
+    public void notifyRefresh(){
+        ValueDao valueDao = App.getInstance().getSession().getValueDao();
+        QueryBuilder qb = valueDao.queryBuilder().where(ValueDao.Properties.ProblemId.eq(mProblemID));
+        List values = qb.list();
+        if(mAdapter!=null) {
+            mAdapter.clear();
+            mAdapter.addAll(values);
+            mAdapter.notifyDataSetChanged();
+        }
+    }
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -131,7 +182,13 @@ public class ValuesChoiceFragment extends Fragment implements AbsListView.OnItem
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
+            //mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
+            DescriptionDialog dialog = new DescriptionDialog();
+            Bundle bdl = new Bundle();
+            bdl.putString(DescriptionDialog.ARG_TITLE,((ValueChoiceAdapter)parent.getAdapter()).getItem(position).getName());
+            bdl.putString(DescriptionDialog.ARG_DESCRIPTION,((ValueChoiceAdapter)parent.getAdapter()).getItem(position).getDescription());
+            dialog.setArguments(bdl);
+            dialog.show(getFragmentManager(),"AboutDialog");
         }
     }
 

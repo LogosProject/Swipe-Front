@@ -8,4 +8,10 @@
     <dimen name="navigation_drawer_width">240dp</dimen>
     <dimen name="row_with_checkbox_text_size">20sp</dimen>
     <dimen name="row_with_checkbox_left_margin">10dp</dimen>
+
+    <!-- popups for creating problems, values, solutions... -->
+    <dimen name="fragment_title_heigth">80sp</dimen>
+    <dimen name="fragment_title_text_size">25sp</dimen>
+    <dimen name="textview_title_heigth">40sp</dimen>
+    <dimen name="textview_description_heigth">200sp</dimen>
 </resources>

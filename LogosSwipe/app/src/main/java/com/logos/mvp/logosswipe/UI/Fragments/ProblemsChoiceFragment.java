@@ -2,16 +2,14 @@ package com.logos.mvp.logosswipe.UI.fragments;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -21,7 +19,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.logos.mvp.logosswipe.App;
 import com.logos.mvp.logosswipe.R;
-import com.logos.mvp.logosswipe.UI.activities.ValuesChoiceActivity;
 import com.logos.mvp.logosswipe.UI.adapters.ProblemsChoiceAdapter;
 import com.logos.mvp.logosswipe.UI.dialogs.CreationDialog;
 import com.logos.mvp.logosswipe.UI.dialogs.DescriptionDialog;
@@ -60,13 +57,15 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
     /**
      * The fragment's ListView/GridView.
      */
-    private AbsListView mListView;
+    private ListView mListView;
 
     /**
      * The Adapter which will be used to populate the ListView/GridView with
      * Views.
      */
     private ProblemsChoiceAdapter mAdapter;
+
+    private SwipeRefreshLayout mSwipeRefreshLayout;
 
 
     private FloatingActionButton buttonNewProblem;
@@ -122,6 +121,8 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
 
             @Override
             public void onErrorResponse(VolleyError error) {
+                mSwipeRefreshLayout.setRefreshing(false);
+
                 Log.e(TAG,"VolleyError : "+ error.toString());
 
             }
@@ -133,10 +134,11 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_problems_choice_list, container, false);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.activity_main_swipe_refresh_layout);
 
         // Set the adapter
-        mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
+        mListView = (ListView) view.findViewById(R.id.list_view);
+        mListView.setAdapter(mAdapter);
         mListView.setChoiceMode( ListView.CHOICE_MODE_SINGLE);
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
@@ -155,6 +157,12 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
         });
         buttonNewProblem.attachToListView(mListView);
 
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                launchRequest();
+            }
+        });
        /* buttonChoose =(Button) view.findViewById(R.id.problems_choice_selected_button);
         buttonChoose.setVisibility(View.INVISIBLE);
         buttonChoose.setOnClickListener(new View.OnClickListener() {
@@ -175,6 +183,8 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
         ProblemDao problemDao = App.getInstance().getSession().getProblemDao();
         QueryBuilder qb = problemDao.queryBuilder();
         List problems = qb.list();
+        mSwipeRefreshLayout.setRefreshing(false);
+
         if(mAdapter!=null) {
             mAdapter.clear();
             mAdapter.addAll(problems);

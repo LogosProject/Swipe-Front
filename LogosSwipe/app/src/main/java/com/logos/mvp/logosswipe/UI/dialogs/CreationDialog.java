@@ -51,7 +51,6 @@ public class CreationDialog extends DialogFragment {
     }
     private DIALOG_MODE mDialogMode;
 
-
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         if (getArguments()!=null){
@@ -92,7 +91,6 @@ public class CreationDialog extends DialogFragment {
                             }
                         } )
                 {
-
                     @Override
                     protected Map<String, String> getParams()
                     {

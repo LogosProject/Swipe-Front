@@ -10,35 +10,35 @@ import com.logos.mvp.logosswipe.R;
 
 import java.util.ArrayList;
 
-import greendao.Value;
+import greendao.Solution;
 
 /**
  * Created by Sylvain on 31/01/15.
  */
-public class ValueChoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class SolutionChoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    public ArrayList<Value> getValues() {
-        return mValues;
+    public ArrayList<Solution> getSolutions() {
+        return mSolutions;
     }
 
-    ArrayList<Value> mValues;
+    ArrayList<Solution> mSolutions;
 
-    public ArrayList<Value> getSelectedValues() {
-        return mSelectedValues;
+    public ArrayList<Solution> getSelectedSolutions() {
+        return mSelectedSolutions;
     }
 
-    ArrayList<Value> mSelectedValues;
+    ArrayList<Solution> mSelectedSolutions;
 
 
-    public interface ValueChoiceAdapterInterface {
+    public interface SolutionChoiceAdapterInterface {
         public void onItemsSelected();
     }
-    ValueChoiceAdapterInterface mFragmentListener;
+    SolutionChoiceAdapterInterface mFragmentListener;
 
-    public ValueChoiceAdapter(ArrayList<Value> values, ValueChoiceAdapterInterface fragment) {
-       this.mValues=values;
-       mSelectedValues=new ArrayList<>();
-       mFragmentListener= fragment;
+    public SolutionChoiceAdapter(ArrayList<Solution> values, SolutionChoiceAdapterInterface fragment) {
+        this.mSolutions =values;
+        mSelectedSolutions =new ArrayList<>();
+        mFragmentListener= fragment;
 
     }
 
@@ -53,30 +53,30 @@ public class ValueChoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        if ( mValues !=null) {
+        if ( mSolutions !=null) {
             VHItem item = (VHItem) holder;
-            Value value = getItem(position);
-            item.mTitle.setText(value.getName());
-            item.mDescription.setText(value.getDescription());
-            item.mValue=value;
+            Solution solution = getItem(position);
+            item.mTitle.setText(solution.getName());
+            item.mDescription.setText(solution.getDescription());
+            item.mSolution =solution;
         }
     }
 
     @Override
     public int getItemCount() {
-        return mValues == null ? 0 : mValues.size();
+        return mSolutions == null ? 0 : mSolutions.size();
     }
 
 
-    private Value getItem(int position) {
-        return mValues.get(position);
+    private Solution getItem(int position) {
+        return mSolutions.get(position);
 
     }
 
     class VHItem extends RecyclerView.ViewHolder implements View.OnClickListener{
         TextView mTitle;
         TextView mDescription;
-        Value mValue;
+        Solution mSolution;
         public VHItem(View itemView) {
             super(itemView);
             mTitle = (TextView) itemView.findViewById(R.id.tv_title);
@@ -89,19 +89,19 @@ public class ValueChoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             if(v.isSelected()){
                 v.setSelected(false);
                 v.setBackgroundColor(v.getResources().getColor(android.R.color.transparent));
-                mSelectedValues.remove(mValue);
+                mSelectedSolutions.remove(mSolution);
             }else{
                 v.setSelected(true);
-                mSelectedValues.add(mValue);
+                mSelectedSolutions.add(mSolution);
                 v.setBackgroundColor(v.getResources().getColor(R.color.selection_item));
             }
             mFragmentListener.onItemsSelected();
         }
     }
 
-    public void setValues(ArrayList<Value> mValues) {
-        this.mValues = mValues;
+    public void setSolutions(ArrayList<Solution> solutions) {
+        this.mSolutions = solutions;
     }
- }
+}
 
 

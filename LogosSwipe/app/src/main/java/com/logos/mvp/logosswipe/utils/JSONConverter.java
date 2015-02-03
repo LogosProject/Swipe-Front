@@ -4,6 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import greendao.Problem;
+import greendao.Solution;
 import greendao.Value;
 
 /**
@@ -23,5 +24,10 @@ public class JSONConverter {
 
         return new Value(Long.parseLong(id),name,description,problemId);
     }
-
+    public static Solution solutionConverter(JSONObject obj,Long problemId) throws JSONException{
+        String id = obj.getString("id");
+        String name = obj.getString("name");
+        String description = obj.getString("description");
+        return new Solution(Long.parseLong(id),name,description,problemId);
+    }
 }

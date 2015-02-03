@@ -29,28 +29,20 @@ import java.util.ArrayList;
  * interface.
  */
 public class ValuesRankFragment extends Fragment implements AbsListView.OnItemClickListener {
+    public static final String TAG="ValuesRankFragment";
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    public static final String ARG_SOLUTION_IDS = "ARG_SOLUTION_IDS";
+
+    public long getProblemId() {
+        return mProblemId;
+    }
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private long mProblemId;
+    private long[] mValueIds;
+    private long[] mSolutionIds;
 
     private OnFragmentInteractionListener mListener;
-
-    /**
-     * The fragment's ListView/GridView.
-     */
-    private AbsListView mListView;
-
-    /**
-     * The Adapter which will be used to populate the ListView/GridView with
-     * Views.
-     */
-    private ListAdapter mAdapter;
 
     private Button buttonValuesRanked;
 

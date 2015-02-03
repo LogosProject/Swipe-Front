@@ -5,4 +5,5 @@
     <color name="primary">#F44336</color>
     <color name="primary_pressed">#B71C1C</color>
     <color name="ripple">#EF9A9A</color>
+    <color name="selection_item">#E3F2FD</color>
 </resources>

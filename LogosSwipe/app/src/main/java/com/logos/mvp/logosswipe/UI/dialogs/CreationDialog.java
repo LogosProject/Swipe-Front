@@ -5,35 +5,23 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
-import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.StringRequest;
-import com.logos.mvp.logosswipe.App;
 import com.logos.mvp.logosswipe.R;
 import com.logos.mvp.logosswipe.UI.fragments.ProblemsChoiceFragment;
+import com.logos.mvp.logosswipe.UI.fragments.SolutionsChoiceFragment;
+import com.logos.mvp.logosswipe.UI.fragments.ValuesChoiceFragment;
 import com.logos.mvp.logosswipe.network.RequestQueueSingleton;
-import com.logos.mvp.logosswipe.utils.JSONConverter;
 import com.logos.mvp.logosswipe.utils.Requests;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import greendao.Problem;
-import greendao.ProblemDao;
 
 /**
  * Created by Sylvain on 02/02/15.
@@ -47,7 +35,8 @@ public class CreationDialog extends DialogFragment {
     public enum DIALOG_MODE {
         NONE,
         PROBLEM,
-        VALUE
+        VALUE,
+        SOLUTION
     }
     private DIALOG_MODE mDialogMode;
 
@@ -66,7 +55,19 @@ public class CreationDialog extends DialogFragment {
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
-                StringRequest postRequest = new StringRequest(Request.Method.POST, Requests.postProblemUrl(),
+                String url = "";
+                switch (mDialogMode){
+                    case PROBLEM:
+                       url=Requests.postProblemUrl();
+                        break;
+                    case VALUE:
+                        url=Requests.postValueProblemUrl(((ValuesChoiceFragment)getTargetFragment()).getProblemID());
+                        break;
+                    case SOLUTION:
+                        url=Requests.postSolutionProblemUrl(((SolutionsChoiceFragment) getTargetFragment()).getProblemId());
+                        break;
+                }
+                StringRequest postRequest = new StringRequest(Request.Method.POST,url,
                         new Response.Listener<String>()
                         {
                             @Override
@@ -77,6 +78,12 @@ public class CreationDialog extends DialogFragment {
                                         Log.d(TAG,response);
                                         break;
                                     case VALUE:
+                                        ((ValuesChoiceFragment)getTargetFragment()).launchRequest();
+                                        Log.d(TAG,response);
+                                        break;
+                                    case SOLUTION:
+                                        ((SolutionsChoiceFragment)getTargetFragment()).launchRequest();
+                                        Log.d(TAG,response);
                                         break;
                                 }
                                 Log.d("Response", response.toString());
@@ -120,6 +127,9 @@ public class CreationDialog extends DialogFragment {
                 break;
             case VALUE:
                 builder.setTitle("Créer une valeur");
+                break;
+            case SOLUTION:
+                builder.setTitle("Créer une solution");
                 break;
         }
 

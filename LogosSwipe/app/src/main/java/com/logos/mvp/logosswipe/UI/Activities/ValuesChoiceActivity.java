@@ -16,19 +16,31 @@ public class ValuesChoiceActivity extends ActionBarActivity implements ValuesCho
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_values_choice);
+        if (savedInstanceState == null) {
 
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        Long problemId = -1L;
-        if(getIntent().getExtras()!=null){
-            problemId=getIntent().getExtras().getLong(ValuesChoiceFragment.ARG_PROBLEM_ID);
+            FragmentManager fragmentManager = getFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            Long problemId = -1L;
+            if (getIntent().getExtras() != null) {
+                problemId = getIntent().getExtras().getLong(ValuesChoiceFragment.ARG_PROBLEM_ID);
+            }
+            ValuesChoiceFragment fragment = ValuesChoiceFragment.newInstance(problemId);
+            fragmentTransaction.add(R.id.values_choice_container, fragment, ValuesChoiceFragment.TAG);
+            fragmentTransaction.commit();
         }
-        ValuesChoiceFragment fragment = ValuesChoiceFragment.newInstance(problemId);
-        fragmentTransaction.add(R.id.values_choice_container, fragment);
-        fragmentTransaction.commit();
 
     }
 
+    @Override
+    public void onBackPressed() {
+        ValuesChoiceFragment fragment =(ValuesChoiceFragment) getFragmentManager().findFragmentByTag(ValuesChoiceFragment.TAG);
+        if(fragment != null && fragment.isItemSelected()){
+            fragment.resetSelection();
+            return;
+        }
+        super.onBackPressed();
+
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -56,4 +68,5 @@ public class ValuesChoiceActivity extends ActionBarActivity implements ValuesCho
     public void onFragmentInteraction(String id) {
 
     }
+
 }

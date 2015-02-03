@@ -14,7 +14,9 @@ public class Requests {
     public static String getValuesProblemUrl(Long problemId){
         return getProblemsUrl()+"/"+problemId+"/values";
     }
-
+    public static String getSolutionsProblemUrl(Long problemId){
+        return getProblemsUrl()+"/"+problemId+"/solutions";
+    }
 
     // ** POST **//
     public static String postProblemUrl(){
@@ -23,5 +25,9 @@ public class Requests {
 
     public static String postValueProblemUrl(Long problemId){
         return postProblemUrl()+"/"+problemId+"/values";
+    }
+
+    public static String postSolutionProblemUrl(Long problemId){
+        return postProblemUrl()+"/"+problemId+"/solutions";
     }
 }

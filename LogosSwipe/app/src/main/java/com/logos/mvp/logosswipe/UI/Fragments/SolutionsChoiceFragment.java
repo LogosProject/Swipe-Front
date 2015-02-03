@@ -4,20 +4,42 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.logos.mvp.logosswipe.App;
 import com.logos.mvp.logosswipe.R;
 import com.logos.mvp.logosswipe.UI.activities.ValuesRankActivity;
+import com.logos.mvp.logosswipe.UI.adapters.SolutionChoiceAdapter;
+import com.logos.mvp.logosswipe.UI.dialogs.CreationDialog;
+import com.logos.mvp.logosswipe.network.RequestQueueSingleton;
+import com.logos.mvp.logosswipe.utils.JSONConverter;
+import com.logos.mvp.logosswipe.utils.Requests;
+import com.melnykov.fab.FloatingActionButton;
+import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import de.greenrobot.dao.query.QueryBuilder;
+import greendao.Problem;
+import greendao.ProblemDao;
+import greendao.Solution;
+import greendao.SolutionDao;
+import greendao.ValueDao;
 
 /**
  * A fragment representing a list of Items.
@@ -28,39 +50,45 @@ import java.util.ArrayList;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class SolutionsChoiceFragment extends Fragment implements AbsListView.OnItemClickListener {
+public class SolutionsChoiceFragment extends Fragment implements SolutionChoiceAdapter.SolutionChoiceAdapterInterface {
+    public static final String TAG="SolutionsChoiceFragment";
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    public static final String ARG_VALUE_IDS = "ARG_VALUE_IDS";
+
+    public long getProblemId() {
+        return mProblemId;
+    }
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private long mProblemId;
+    private long[] mValueIds;
 
     private OnFragmentInteractionListener mListener;
 
     /**
      * The fragment's ListView/GridView.
      */
-    private AbsListView mListView;
+    private SolutionChoiceAdapter mAdapter;
 
-    /**
-     * The Adapter which will be used to populate the ListView/GridView with
-     * Views.
-     */
-    private ListAdapter mAdapter;
+    private RecyclerView mRecyclerView;
+    private RecyclerView.LayoutManager mLayoutManager;
 
-    private Button buttonNewSolution;
-    private Button buttonSolutionsSelected;
+
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private FloatingActionButton floattingButton;
+
+    private TextView mTvTitle;
+    private TextView mTvDescription;
+
+    private boolean isItemSelected =false;
+
 
     // TODO: Rename and change types of parameters
-    public static SolutionsChoiceFragment newInstance(String param1, String param2) {
+    public static SolutionsChoiceFragment newInstance(Long param1, long[] param2) {
         SolutionsChoiceFragment fragment = new SolutionsChoiceFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putLong(ValuesChoiceFragment.ARG_PROBLEM_ID, param1);
+        args.putLongArray(ARG_VALUE_IDS, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -77,33 +105,119 @@ public class SolutionsChoiceFragment extends Fragment implements AbsListView.OnI
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            mProblemId = getArguments().getLong(ValuesChoiceFragment.ARG_PROBLEM_ID);
+            mValueIds = getArguments().getLongArray(ARG_VALUE_IDS);
         }
+        SolutionDao solutionDao = App.getInstance().getSession().getSolutionDao();
+        QueryBuilder qb = solutionDao.queryBuilder().where(ValueDao.Properties.ProblemId.eq(mProblemId));
+        List values = qb.list();
 
-        // TODO: Change Adapter to display your content
-        mAdapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, new ArrayList<String>());
+        mAdapter = new SolutionChoiceAdapter(new ArrayList<Solution>(values),this);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_solution, container, false);
+        ProblemDao problemDao = App.getInstance().getSession().getProblemDao();
+        QueryBuilder qb = problemDao.queryBuilder().where(ProblemDao.Properties.Id.eq(mProblemId));
+        Problem problem = (Problem)qb.list().get(0);
 
+        mTvTitle = (TextView) view.findViewById(R.id.tv_title);
+        mTvDescription = (TextView) view.findViewById(R.id.tv_description);
+        mTvTitle.setText(problem.getName());
+        mTvDescription.setText(problem.getDescription());
+        mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_layout_value_choice);
+
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.list_view);
+        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this.getActivity()).build());
         // Set the adapter
-        mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
 
-        // Set OnItemClickListener so we can be notified on item clicks
-        mListView.setOnItemClickListener(this);
+        floattingButton = (FloatingActionButton) view.findViewById(R.id.bt_new_value);
 
-        buttonNewSolution = (Button) view.findViewById(R.id.solutions_choice_new_solution_button);
-        buttonNewSolution.setOnClickListener(handlerButtonNewValue);
+        floattingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!isItemSelected()) {
+                    CreationDialog dialog = new CreationDialog();
+                    Bundle bdl = new Bundle();
+                    bdl.putSerializable(CreationDialog.ARG_MODE, CreationDialog.DIALOG_MODE.SOLUTION);
+                    dialog.setArguments(bdl);
+                    dialog.setTargetFragment(SolutionsChoiceFragment.this, 0);
+                    dialog.show(getFragmentManager(), CreationDialog.TAG);
+                }else{
+                   // TODO : do
+                    Intent nextIntent = new Intent(v.getContext(), ValuesRankActivity.class);
+                    nextIntent.putExtra(ValuesChoiceFragment.ARG_PROBLEM_ID, mProblemId);
+                    nextIntent.putExtra(SolutionsChoiceFragment.ARG_VALUE_IDS, mValueIds);
+                    long[] array = new long[mAdapter.getSelectedSolutions().size()];
+                    for(int i = 0; i< mAdapter.getSelectedSolutions().size();i++){
+                        array[i]=mAdapter.getSelectedSolutions().get(i).getId();
+                    }
+                    nextIntent.putExtra(SolutionsChoiceFragment.ARG_VALUE_IDS, array);
+                    v.getContext().startActivity(nextIntent);
+                }
 
-        buttonSolutionsSelected = (Button) view.findViewById(R.id.solutions_choice_selected_button);
-        buttonSolutionsSelected.setOnClickListener(handlerButtonSelect);
+            }
+        });
+        floattingButton.attachToRecyclerView(mRecyclerView);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                launchRequest();
+            }
+        });
+        //buttonValuesSelected = (Button) view.findViewById(R.id.values_choice_selected_button);
+        //buttonValuesSelected.setOnClickListener(handlerButtonSelect);
+        launchRequest();
+
         return view;
+    }
+
+    public void launchRequest(){
+        // Instantiate the RequestQueue.
+        JsonArrayRequest jReq = new JsonArrayRequest(Requests.getSolutionsProblemUrl(mProblemId),
+                new Response.Listener<JSONArray>() {
+
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        for (int i = 0; i < response.length(); i++) {
+                            try {
+                                Solution solution = JSONConverter.solutionConverter(response.getJSONObject(i), mProblemId);
+                                SolutionDao solutionDao = App.getInstance().getSession().getSolutionDao();
+                                solutionDao.insertOrReplace(solution);
+                                Log.d(TAG, solution.getName());
+                            } catch (JSONException e) {
+                                Log.e(TAG, e.toString());
+                            }
+                        }
+                        notifyRefresh();
+                    }
+                }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG,"VolleyError : "+ error.toString());
+
+            }
+        });
+        RequestQueueSingleton.getInstance(this.getActivity().getApplicationContext()).addToRequestQueue(jReq);
+    }
+
+    public void notifyRefresh(){
+        SolutionDao solutionDao = App.getInstance().getSession().getSolutionDao();
+        QueryBuilder qb = solutionDao.queryBuilder().where(ValueDao.Properties.ProblemId.eq(mProblemId));
+        List solutions = qb.list();
+        mSwipeRefreshLayout.setRefreshing(false);
+        if(mAdapter!=null) {
+            mAdapter.setSolutions(new ArrayList<Solution>(solutions));
+            mAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override
@@ -123,53 +237,30 @@ public class SolutionsChoiceFragment extends Fragment implements AbsListView.OnI
         mListener = null;
     }
 
+    public void resetSelection(){
+        ArrayList<Solution> temp = mAdapter.getSolutions();
+        mAdapter=new SolutionChoiceAdapter(temp,this);
+        mRecyclerView.setAdapter(mAdapter);
+        mAdapter.notifyDataSetChanged();
+        floattingButton.setImageResource(R.drawable.ic_content_add);
+        isItemSelected=false;
+    }
 
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (null != mListener) {
-            // Notify the active callbacks interface (the activity, if the
-            // fragment is attached to one) that an item has been selected.
-            //mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
+    public void onItemsSelected() {
+        if(mAdapter.getSelectedSolutions().isEmpty()){
+            floattingButton.setImageResource(R.drawable.ic_content_add);
+            isItemSelected=false;
+        }else{
+            floattingButton.setImageResource(R.drawable.ic_navigation_check);
+            isItemSelected=true;
         }
     }
 
-
-    View.OnClickListener handlerButtonNewValue = new View.OnClickListener() {
-        public void onClick(View v) {
-            // TODO
-        }
-    };
-
-    View.OnClickListener handlerButtonSelect = new View.OnClickListener() {
-        public void onClick(View v) {
-            Intent nextIntent = new Intent(SolutionsChoiceFragment.this.getActivity(), ValuesRankActivity.class);
-            startActivity(nextIntent);
-        }
-    };
-
-    /**
-     * The default content for this Fragment has a TextView that is shown when
-     * the list is empty. If you would like to change the text, call this method
-     * to supply the text it should use.
-     */
-    public void setEmptyText(CharSequence emptyText) {
-        View emptyView = mListView.getEmptyView();
-
-        if (emptyView instanceof TextView) {
-            ((TextView) emptyView).setText(emptyText);
-        }
+    public boolean isItemSelected() {
+        return isItemSelected;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         public void onFragmentInteraction(String id);

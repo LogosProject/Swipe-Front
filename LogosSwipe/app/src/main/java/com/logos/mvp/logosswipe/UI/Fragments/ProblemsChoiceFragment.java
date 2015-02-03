@@ -4,15 +4,15 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -21,15 +21,16 @@ import com.logos.mvp.logosswipe.App;
 import com.logos.mvp.logosswipe.R;
 import com.logos.mvp.logosswipe.UI.adapters.ProblemsChoiceAdapter;
 import com.logos.mvp.logosswipe.UI.dialogs.CreationDialog;
-import com.logos.mvp.logosswipe.UI.dialogs.DescriptionDialog;
 import com.logos.mvp.logosswipe.network.RequestQueueSingleton;
 import com.logos.mvp.logosswipe.utils.JSONConverter;
 import com.logos.mvp.logosswipe.utils.Requests;
 import com.melnykov.fab.FloatingActionButton;
+import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.greenrobot.dao.query.QueryBuilder;
@@ -57,13 +58,10 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
     /**
      * The fragment's ListView/GridView.
      */
-    private ListView mListView;
-
-    /**
-     * The Adapter which will be used to populate the ListView/GridView with
-     * Views.
-     */
+    private RecyclerView mRecyclerView;
     private ProblemsChoiceAdapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
+
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
@@ -90,14 +88,12 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         ProblemDao problemDao = App.getInstance().getSession().getProblemDao();
         QueryBuilder qb = problemDao.queryBuilder();
         List problems = qb.list();
-
-        mAdapter = new ProblemsChoiceAdapter(getActivity(),
-                R.layout.listview_item_problems_choice, problems);
+        mAdapter = new ProblemsChoiceAdapter(new ArrayList<Problem>(problems));
         launchRequest();
+
     }
 
     public void launchRequest(){
@@ -133,15 +129,19 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+
         View view = inflater.inflate(R.layout.fragment_problems_choice_list, container, false);
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.activity_main_swipe_refresh_layout);
 
-        // Set the adapter
-        mListView = (ListView) view.findViewById(R.id.list_view);
-        mListView.setAdapter(mAdapter);
-        mListView.setChoiceMode( ListView.CHOICE_MODE_SINGLE);
-        // Set OnItemClickListener so we can be notified on item clicks
-        mListView.setOnItemClickListener(this);
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.list_view);
+        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this.getActivity()).build());
+
         buttonNewProblem = (FloatingActionButton) view.findViewById(R.id.bt_new_problem);
         buttonNewProblem.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -155,7 +155,7 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
 
             }
         });
-        buttonNewProblem.attachToListView(mListView);
+        buttonNewProblem.attachToRecyclerView(mRecyclerView);
 
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -163,18 +163,6 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
                 launchRequest();
             }
         });
-       /* buttonChoose =(Button) view.findViewById(R.id.problems_choice_selected_button);
-        buttonChoose.setVisibility(View.INVISIBLE);
-        buttonChoose.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(mListView.getCheckedItemCount()>0) {
-                    Intent nextIntent = new Intent(ProblemsChoiceFragment.this.getActivity(), ValuesChoiceActivity.class);
-                    nextIntent.putExtra(ValuesChoiceFragment.ARG_PROBLEM_ID, mAdapter.getItem(mListView.getCheckedItemPosition()).getId());
-                    startActivity(nextIntent);
-                }
-            }
-        });*/
 
         return view;
     }
@@ -186,8 +174,7 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
         mSwipeRefreshLayout.setRefreshing(false);
 
         if(mAdapter!=null) {
-            mAdapter.clear();
-            mAdapter.addAll(problems);
+            mAdapter.setProblems(new ArrayList<Problem>(problems));
             mAdapter.notifyDataSetChanged();
         }
     }
@@ -212,34 +199,23 @@ public class ProblemsChoiceFragment extends Fragment implements AbsListView.OnIt
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (null != mAdapter && null != mAdapter.getItem(position)) {
+        /*if (null != mAdapter && null != mAdapter.getItem(position)) {
             DescriptionDialog dialog = new DescriptionDialog();
             Bundle bdl = new Bundle();
-            bdl.putString(DescriptionDialog.ARG_TITLE,mAdapter.getItem(position).getName());
-            bdl.putString(DescriptionDialog.ARG_DESCRIPTION, mAdapter.getItem(position).getDescription());
-            dialog.setArguments(bdl);
-            dialog.show(getFragmentManager(), "AboutDialog");
-            mListView.setItemChecked(position, true);
-            mListView.setSelection(position);
+           // bdl.putString(DescriptionDialog.ARG_TITLE,mAdapter.getItem(position).getName());
+            //bdl.putString(DescriptionDialog.ARG_DESCRIPTION, mAdapter.getItem(position).getDescription());
+            //dialog.setArguments(bdl);
+            //dialog.show(getFragmentManager(), "AboutDialog");
+            //mRecyclerView.setItemChecked(position, true);
+            //mRecyclerView.setSelection(position);
 
-        }
+        }*/
     }
 
 
 
 
-    /**
-     * The default content for this Fragment has a TextView that is shown when
-     * the list is empty. If you would like to change the text, call this method
-     * to supply the text it should use.
-     */
-    public void setEmptyText(CharSequence emptyText) {
-        View emptyView = mListView.getEmptyView();
 
-        if (emptyView instanceof TextView) {
-            ((TextView) emptyView).setText(emptyText);
-        }
-    }
 
     /**
      * This interface must be implemented by activities that contain this

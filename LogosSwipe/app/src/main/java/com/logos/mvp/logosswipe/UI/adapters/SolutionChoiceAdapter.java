@@ -10,97 +10,48 @@ import com.logos.mvp.logosswipe.R;
 
 import java.util.ArrayList;
 
+import greendao.Problem;
 import greendao.Solution;
+import greendao.Value;
 
 /**
  * Created by Sylvain on 31/01/15.
  */
-public class SolutionChoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-    public ArrayList<Solution> getSolutions() {
-        return mSolutions;
-    }
-
-    ArrayList<Solution> mSolutions;
-
-    public ArrayList<Solution> getSelectedSolutions() {
-        return mSelectedSolutions;
-    }
-
-    ArrayList<Solution> mSelectedSolutions;
+public class SolutionChoiceAdapter extends GenericHeaderAdapter<Solution, Problem> {
 
 
-    public interface SolutionChoiceAdapterInterface {
-        public void onItemsSelected();
-    }
-    SolutionChoiceAdapterInterface mFragmentListener;
-
-    public SolutionChoiceAdapter(ArrayList<Solution> values, SolutionChoiceAdapterInterface fragment) {
-        this.mSolutions =values;
-        mSelectedSolutions =new ArrayList<>();
-        mFragmentListener= fragment;
-
+    public SolutionChoiceAdapter(Problem problem,ArrayList<Solution> values, GenericHeaderAdapter.HeaderAdapterInterface fragment) {
+        super(problem,values,fragment,R.layout.header_item,R.layout.listview_item_choice);
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.listview_item_choice, parent, false);
-        // set the view's size, margins, paddings and layout parameters
-        return new VHItem(v);
-
+        if (viewType == TYPE_ITEM) {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(mItemRessourceId, parent, false);
+            return new VHItem(v);
+        } else if (viewType == TYPE_HEADER) {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(mHeaderRessourceId, parent, false);
+            return new VHHeader(v);
+        }
+        throw new RuntimeException("there is no type that matches the type " + viewType + " + make sure your using types correctly");
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        if ( mSolutions !=null) {
-            VHItem item = (VHItem) holder;
-            Solution solution = getItem(position);
-            item.mTitle.setText(solution.getName());
-            item.mDescription.setText(solution.getDescription());
-            item.mSolution =solution;
+        if (holder instanceof GenericHeaderAdapter<?,?>.VHItem && getmObjects() !=null) {
+            GenericHeaderAdapter.VHItem item = (GenericHeaderAdapter.VHItem) holder;
+            Solution value = getItem(position);
+            item.mTitle.setText(value.getName());
+            item.mDescription.setText(value.getDescription());
+            item.mObject=value;
+        }else if(holder instanceof GenericHeaderAdapter<?,?>.VHHeader && getmHeaderObject() != null){
+            GenericHeaderAdapter.VHHeader item = (GenericHeaderAdapter.VHHeader) holder;
+            Problem problem = getmHeaderObject();
+            item.mTitle.setText(problem.getName());
+            item.mDescription.setText(problem.getDescription());
         }
-    }
-
-    @Override
-    public int getItemCount() {
-        return mSolutions == null ? 0 : mSolutions.size();
-    }
-
-
-    private Solution getItem(int position) {
-        return mSolutions.get(position);
-
-    }
-
-    class VHItem extends RecyclerView.ViewHolder implements View.OnClickListener{
-        TextView mTitle;
-        TextView mDescription;
-        Solution mSolution;
-        public VHItem(View itemView) {
-            super(itemView);
-            mTitle = (TextView) itemView.findViewById(R.id.tv_title);
-            mDescription = (TextView)itemView.findViewById(R.id.tv_description);
-            itemView.setOnClickListener(this);
-        }
-
-        @Override
-        public void onClick(View v) {
-            if(v.isSelected()){
-                v.setSelected(false);
-                v.setBackgroundColor(v.getResources().getColor(android.R.color.transparent));
-                mSelectedSolutions.remove(mSolution);
-            }else{
-                v.setSelected(true);
-                mSelectedSolutions.add(mSolution);
-                v.setBackgroundColor(v.getResources().getColor(R.color.selection_item));
-            }
-            mFragmentListener.onItemsSelected();
-        }
-    }
-
-    public void setSolutions(ArrayList<Solution> solutions) {
-        this.mSolutions = solutions;
     }
 }
 

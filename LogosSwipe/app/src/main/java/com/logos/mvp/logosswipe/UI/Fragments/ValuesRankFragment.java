@@ -4,6 +4,10 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,10 +18,29 @@ import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.logos.mvp.logosswipe.App;
 import com.logos.mvp.logosswipe.R;
+import com.logos.mvp.logosswipe.UI.activities.ValuesRankActivity;
 import com.logos.mvp.logosswipe.UI.activities.VersusActivity;
+import com.logos.mvp.logosswipe.UI.adapters.SolutionChoiceAdapter;
+import com.logos.mvp.logosswipe.UI.adapters.ValueChoiceAdapter;
+import com.logos.mvp.logosswipe.UI.adapters.ValueRankAdapter;
+import com.logos.mvp.logosswipe.UI.dialogs.CreationDialog;
+import com.melnykov.fab.FloatingActionButton;
+import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import de.greenrobot.dao.query.QueryBuilder;
+import de.greenrobot.dao.query.WhereCondition;
+import greendao.Problem;
+import greendao.ProblemDao;
+import greendao.Solution;
+import greendao.SolutionDao;
+import greendao.Value;
+import greendao.ValueDao;
 
 /**
  * A fragment representing a list of Items.
@@ -30,28 +53,35 @@ import java.util.ArrayList;
  */
 public class ValuesRankFragment extends Fragment implements AbsListView.OnItemClickListener {
     public static final String TAG="ValuesRankFragment";
-
-    public static final String ARG_SOLUTION_IDS = "ARG_SOLUTION_IDS";
+    public static final String ARG_SOLUTION_IDS="ARG_SOLUTION_IDS";
 
     public long getProblemId() {
         return mProblemId;
     }
 
-    // TODO: Rename and change types of parameters
     private long mProblemId;
     private long[] mValueIds;
     private long[] mSolutionIds;
 
     private OnFragmentInteractionListener mListener;
 
-    private Button buttonValuesRanked;
+    /**
+     * The fragment's ListView/GridView.
+     */
+    private ValueRankAdapter mAdapter;
 
-    // TODO: Rename and change types of parameters
-    public static ValuesRankFragment newInstance(String param1, String param2) {
+    private RecyclerView mRecyclerView;
+    private RecyclerView.LayoutManager mLayoutManager;
+
+
+    private FloatingActionButton floattingButton;
+
+    public static ValuesRankFragment newInstance(long problemID, long[] valueIds, long[] solutionIds) {
         ValuesRankFragment fragment = new ValuesRankFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putLong(ValuesChoiceFragment.ARG_PROBLEM_ID, problemID);
+        args.putLongArray(SolutionsChoiceFragment.ARG_VALUE_IDS, valueIds);
+        args.putLongArray(ARG_SOLUTION_IDS, solutionIds);
         fragment.setArguments(args);
         return fragment;
     }
@@ -68,13 +98,32 @@ public class ValuesRankFragment extends Fragment implements AbsListView.OnItemCl
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            mProblemId = getArguments().getLong(ValuesChoiceFragment.ARG_PROBLEM_ID);
+            mValueIds = getArguments().getLongArray(SolutionsChoiceFragment.ARG_VALUE_IDS);
+            mSolutionIds = getArguments().getLongArray(ARG_SOLUTION_IDS);
         }
 
-        // TODO: Change Adapter to display your content
-        mAdapter = new ArrayAdapter(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, new ArrayList());
+        ValueDao valueDao = App.getInstance().getSession().getValueDao();
+        ArrayList<WhereCondition> whereConditions = new ArrayList<>();
+        QueryBuilder qb = valueDao.queryBuilder();
+        if(mValueIds.length>1) {
+            for (int i = 0; i < mValueIds.length; i++) {
+                whereConditions.add(ValueDao.Properties.Id.eq(mValueIds[i]));
+            }
+            WhereCondition[] conditionsArray = new WhereCondition[whereConditions.size()];
+            conditionsArray = whereConditions.toArray(conditionsArray);
+            qb.whereOr(conditionsArray[0], conditionsArray[1], Arrays.copyOfRange(conditionsArray, 2, conditionsArray.length));
+        }else if(mValueIds.length==1){
+            qb.where(ValueDao.Properties.Id.eq(mValueIds[0]));
+        }
+        List values = qb.list();
+
+        ProblemDao problemDao = App.getInstance().getSession().getProblemDao();
+        QueryBuilder qb2 = problemDao.queryBuilder().where(ProblemDao.Properties.Id.eq(mProblemId));
+        Problem problem = (Problem)qb2.list().get(0);
+
+        mAdapter = new ValueRankAdapter(problem,new ArrayList<Value>(values));
+
     }
 
     @Override
@@ -82,15 +131,36 @@ public class ValuesRankFragment extends Fragment implements AbsListView.OnItemCl
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_valuesrank, container, false);
 
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.list_view);
+        mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this.getActivity()).build());
         // Set the adapter
-        mListView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
 
-        // Set OnItemClickListener so we can be notified on item clicks
-        mListView.setOnItemClickListener(this);
+        floattingButton = (FloatingActionButton) view.findViewById(R.id.bt_new_value);
 
-        buttonValuesRanked = (Button) view.findViewById(R.id.values_rank_selected_button);
-        buttonValuesRanked.setOnClickListener(handlerButtonSelect);
+        floattingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+               /* // TODO : do
+                Intent nextIntent = new Intent(v.getContext(), ValuesRankActivity.class);
+                nextIntent.putExtra(ValuesChoiceFragment.ARG_PROBLEM_ID, mProblemId);
+                /*nextIntent.putExtra(SolutionsChoiceFragment.ARG_VALUE_IDS, mValueIds);
+                long[] array = new long[mAdapter.getmSelectedObjects().size()];
+                for(int i = 0; i< mAdapter.getmSelectedObjects().size();i++){
+                    array[i]=mAdapter.getmSelectedObjects().get(i).getId();
+                }
+                nextIntent.putExtra(SolutionsChoiceFragment.ARG_VALUE_IDS, array);
+                v.getContext().startActivity(nextIntent);*/
+
+
+            }
+        });
+        floattingButton.attachToRecyclerView(mRecyclerView);
 
         return view;
     }
@@ -135,11 +205,11 @@ public class ValuesRankFragment extends Fragment implements AbsListView.OnItemCl
      * to supply the text it should use.
      */
     public void setEmptyText(CharSequence emptyText) {
-        View emptyView = mListView.getEmptyView();
+      /*  View emptyView = mListView.getEmptyView();
 
         if (emptyView instanceof TextView) {
             ((TextView) emptyView).setText(emptyText);
-        }
+        }*/
     }
 
     /**

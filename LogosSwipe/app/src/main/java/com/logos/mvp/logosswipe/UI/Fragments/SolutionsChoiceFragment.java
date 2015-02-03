@@ -20,6 +20,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.logos.mvp.logosswipe.App;
 import com.logos.mvp.logosswipe.R;
 import com.logos.mvp.logosswipe.UI.activities.ValuesRankActivity;
+import com.logos.mvp.logosswipe.UI.adapters.GenericHeaderAdapter;
 import com.logos.mvp.logosswipe.UI.adapters.SolutionChoiceAdapter;
 import com.logos.mvp.logosswipe.UI.dialogs.CreationDialog;
 import com.logos.mvp.logosswipe.network.RequestQueueSingleton;
@@ -50,7 +51,7 @@ import greendao.ValueDao;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class SolutionsChoiceFragment extends Fragment implements SolutionChoiceAdapter.SolutionChoiceAdapterInterface {
+public class SolutionsChoiceFragment extends Fragment implements GenericHeaderAdapter.HeaderAdapterInterface {
     public static final String TAG="SolutionsChoiceFragment";
 
     public static final String ARG_VALUE_IDS = "ARG_VALUE_IDS";
@@ -77,8 +78,6 @@ public class SolutionsChoiceFragment extends Fragment implements SolutionChoiceA
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private FloatingActionButton floattingButton;
 
-    private TextView mTvTitle;
-    private TextView mTvDescription;
 
     private boolean isItemSelected =false;
 
@@ -111,22 +110,17 @@ public class SolutionsChoiceFragment extends Fragment implements SolutionChoiceA
         SolutionDao solutionDao = App.getInstance().getSession().getSolutionDao();
         QueryBuilder qb = solutionDao.queryBuilder().where(ValueDao.Properties.ProblemId.eq(mProblemId));
         List values = qb.list();
-
-        mAdapter = new SolutionChoiceAdapter(new ArrayList<Solution>(values),this);
+        ProblemDao problemDao = App.getInstance().getSession().getProblemDao();
+        QueryBuilder qb2 = problemDao.queryBuilder().where(ProblemDao.Properties.Id.eq(mProblemId));
+        Problem problem = (Problem)qb2.list().get(0);
+        mAdapter = new SolutionChoiceAdapter(problem,new ArrayList<Solution>(values),this);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_solution, container, false);
-        ProblemDao problemDao = App.getInstance().getSession().getProblemDao();
-        QueryBuilder qb = problemDao.queryBuilder().where(ProblemDao.Properties.Id.eq(mProblemId));
-        Problem problem = (Problem)qb.list().get(0);
 
-        mTvTitle = (TextView) view.findViewById(R.id.tv_title);
-        mTvDescription = (TextView) view.findViewById(R.id.tv_description);
-        mTvTitle.setText(problem.getName());
-        mTvDescription.setText(problem.getDescription());
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_layout_value_choice);
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.list_view);
@@ -155,11 +149,11 @@ public class SolutionsChoiceFragment extends Fragment implements SolutionChoiceA
                     Intent nextIntent = new Intent(v.getContext(), ValuesRankActivity.class);
                     nextIntent.putExtra(ValuesChoiceFragment.ARG_PROBLEM_ID, mProblemId);
                     nextIntent.putExtra(SolutionsChoiceFragment.ARG_VALUE_IDS, mValueIds);
-                    long[] array = new long[mAdapter.getSelectedSolutions().size()];
-                    for(int i = 0; i< mAdapter.getSelectedSolutions().size();i++){
-                        array[i]=mAdapter.getSelectedSolutions().get(i).getId();
+                    long[] array = new long[mAdapter.getmSelectedObjects().size()];
+                    for(int i = 0; i< mAdapter.getmSelectedObjects().size();i++){
+                        array[i]=mAdapter.getmSelectedObjects().get(i).getId();
                     }
-                    nextIntent.putExtra(SolutionsChoiceFragment.ARG_VALUE_IDS, array);
+                    nextIntent.putExtra(ValuesRankFragment.ARG_SOLUTION_IDS, array);
                     v.getContext().startActivity(nextIntent);
                 }
 
@@ -215,7 +209,7 @@ public class SolutionsChoiceFragment extends Fragment implements SolutionChoiceA
         List solutions = qb.list();
         mSwipeRefreshLayout.setRefreshing(false);
         if(mAdapter!=null) {
-            mAdapter.setSolutions(new ArrayList<Solution>(solutions));
+            mAdapter.setmObjects(new ArrayList<Solution>(solutions));
             mAdapter.notifyDataSetChanged();
         }
     }
@@ -238,8 +232,9 @@ public class SolutionsChoiceFragment extends Fragment implements SolutionChoiceA
     }
 
     public void resetSelection(){
-        ArrayList<Solution> temp = mAdapter.getSolutions();
-        mAdapter=new SolutionChoiceAdapter(temp,this);
+        ArrayList<Solution> temp = mAdapter.getmObjects();
+        Problem temp2 = mAdapter.getmHeaderObject();
+        mAdapter=new SolutionChoiceAdapter(temp2,temp,this);
         mRecyclerView.setAdapter(mAdapter);
         mAdapter.notifyDataSetChanged();
         floattingButton.setImageResource(R.drawable.ic_content_add);
@@ -248,7 +243,7 @@ public class SolutionsChoiceFragment extends Fragment implements SolutionChoiceA
 
     @Override
     public void onItemsSelected() {
-        if(mAdapter.getSelectedSolutions().isEmpty()){
+        if(mAdapter.getmSelectedObjects().isEmpty()){
             floattingButton.setImageResource(R.drawable.ic_content_add);
             isItemSelected=false;
         }else{

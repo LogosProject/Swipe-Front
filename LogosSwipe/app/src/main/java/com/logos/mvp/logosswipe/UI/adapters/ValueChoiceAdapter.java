@@ -10,98 +10,47 @@ import com.logos.mvp.logosswipe.R;
 
 import java.util.ArrayList;
 
+import greendao.Problem;
 import greendao.Value;
 
 /**
  * Created by Sylvain on 31/01/15.
  */
-public class ValueChoiceAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class ValueChoiceAdapter extends GenericHeaderAdapter<Value, Problem> {
 
-    public ArrayList<Value> getValues() {
-        return mValues;
+
+    public ValueChoiceAdapter(Problem problem,ArrayList<Value> values, HeaderAdapterInterface fragment) {
+        super(problem,values,fragment,R.layout.header_item,R.layout.listview_item_choice);
     }
-
-    ArrayList<Value> mValues;
-
-    public ArrayList<Value> getSelectedValues() {
-        return mSelectedValues;
-    }
-
-    ArrayList<Value> mSelectedValues;
-
-
-    public interface ValueChoiceAdapterInterface {
-        public void onItemsSelected();
-    }
-    ValueChoiceAdapterInterface mFragmentListener;
-
-    public ValueChoiceAdapter(ArrayList<Value> values, ValueChoiceAdapterInterface fragment) {
-       this.mValues=values;
-       mSelectedValues=new ArrayList<>();
-       mFragmentListener= fragment;
-
-    }
-
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.listview_item_choice, parent, false);
-        // set the view's size, margins, paddings and layout parameters
-        return new VHItem(v);
-
+        if (viewType == TYPE_ITEM) {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(mItemRessourceId, parent, false);
+            return new VHItem(v);
+        } else if (viewType == TYPE_HEADER) {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(mHeaderRessourceId, parent, false);
+            return new VHHeader(v);
+        }
+        throw new RuntimeException("there is no type that matches the type " + viewType + " + make sure your using types correctly");
     }
-
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        if ( mValues !=null) {
+        if (holder instanceof GenericHeaderAdapter<?,?>.VHItem && getmObjects() !=null) {
             VHItem item = (VHItem) holder;
             Value value = getItem(position);
             item.mTitle.setText(value.getName());
             item.mDescription.setText(value.getDescription());
-            item.mValue=value;
+            item.mObject=value;
+        }else if(holder instanceof GenericHeaderAdapter<?,?>.VHHeader && getmHeaderObject() != null){
+            VHHeader item = (VHHeader) holder;
+            Problem problem = getmHeaderObject();
+            item.mTitle.setText(problem.getName());
+            item.mDescription.setText(problem.getDescription());
         }
     }
 
-    @Override
-    public int getItemCount() {
-        return mValues == null ? 0 : mValues.size();
-    }
-
-
-    private Value getItem(int position) {
-        return mValues.get(position);
-
-    }
-
-    class VHItem extends RecyclerView.ViewHolder implements View.OnClickListener{
-        TextView mTitle;
-        TextView mDescription;
-        Value mValue;
-        public VHItem(View itemView) {
-            super(itemView);
-            mTitle = (TextView) itemView.findViewById(R.id.tv_title);
-            mDescription = (TextView)itemView.findViewById(R.id.tv_description);
-            itemView.setOnClickListener(this);
-        }
-
-        @Override
-        public void onClick(View v) {
-            if(v.isSelected()){
-                v.setSelected(false);
-                v.setBackgroundColor(v.getResources().getColor(android.R.color.transparent));
-                mSelectedValues.remove(mValue);
-            }else{
-                v.setSelected(true);
-                mSelectedValues.add(mValue);
-                v.setBackgroundColor(v.getResources().getColor(R.color.selection_item));
-            }
-            mFragmentListener.onItemsSelected();
-        }
-    }
-
-    public void setValues(ArrayList<Value> mValues) {
-        this.mValues = mValues;
-    }
  }
 
 

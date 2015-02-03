@@ -20,6 +20,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.logos.mvp.logosswipe.App;
 import com.logos.mvp.logosswipe.R;
 import com.logos.mvp.logosswipe.UI.activities.SolutionsChoiceActivity;
+import com.logos.mvp.logosswipe.UI.adapters.GenericHeaderAdapter;
 import com.logos.mvp.logosswipe.UI.adapters.ValueChoiceAdapter;
 import com.logos.mvp.logosswipe.UI.dialogs.CreationDialog;
 import com.logos.mvp.logosswipe.network.RequestQueueSingleton;
@@ -49,7 +50,7 @@ import greendao.ValueDao;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class ValuesChoiceFragment extends Fragment implements ValueChoiceAdapter.ValueChoiceAdapterInterface{
+public class ValuesChoiceFragment extends Fragment implements GenericHeaderAdapter.HeaderAdapterInterface{
 
     public static final String TAG="ValuesChoiceFragment";
 
@@ -107,8 +108,10 @@ public class ValuesChoiceFragment extends Fragment implements ValueChoiceAdapter
         ValueDao valueDao = App.getInstance().getSession().getValueDao();
         QueryBuilder qb = valueDao.queryBuilder().where(ValueDao.Properties.ProblemId.eq(mProblemID));
         List values = qb.list();
-
-        mAdapter = new ValueChoiceAdapter(new ArrayList<Value>(values),this);
+        ProblemDao problemDao = App.getInstance().getSession().getProblemDao();
+        QueryBuilder qb2 = problemDao.queryBuilder().where(ProblemDao.Properties.Id.eq(mProblemID));
+        Problem problem = (Problem)qb2.list().get(0);
+        mAdapter = new ValueChoiceAdapter(problem,new ArrayList<Value>(values),this);
 
     }
 
@@ -119,11 +122,6 @@ public class ValuesChoiceFragment extends Fragment implements ValueChoiceAdapter
         ProblemDao problemDao = App.getInstance().getSession().getProblemDao();
         QueryBuilder qb = problemDao.queryBuilder().where(ProblemDao.Properties.Id.eq(mProblemID));
         Problem problem = (Problem)qb.list().get(0);
-
-        mTvTitle = (TextView) view.findViewById(R.id.tv_title);
-        mTvDescription = (TextView) view.findViewById(R.id.tv_description);
-        mTvTitle.setText(problem.getName());
-        mTvDescription.setText(problem.getDescription());
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_layout_value_choice);
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.list_view);
@@ -150,9 +148,9 @@ public class ValuesChoiceFragment extends Fragment implements ValueChoiceAdapter
                 }else{
                     Intent nextIntent = new Intent(v.getContext(), SolutionsChoiceActivity.class);
                     nextIntent.putExtra(ValuesChoiceFragment.ARG_PROBLEM_ID, mProblemID);
-                    long[] array = new long[mAdapter.getSelectedValues().size()];
-                    for(int i = 0; i< mAdapter.getSelectedValues().size();i++){
-                        array[i]=mAdapter.getSelectedValues().get(i).getId();
+                    long[] array = new long[mAdapter.getmSelectedObjects().size()];
+                    for(int i = 0; i< mAdapter.getmSelectedObjects().size();i++){
+                        array[i]=mAdapter.getmSelectedObjects().get(i).getId();
                     }
                     nextIntent.putExtra(SolutionsChoiceFragment.ARG_VALUE_IDS, array);
                     v.getContext().startActivity(nextIntent);
@@ -209,7 +207,7 @@ public class ValuesChoiceFragment extends Fragment implements ValueChoiceAdapter
         List values = qb.list();
         mSwipeRefreshLayout.setRefreshing(false);
         if(mAdapter!=null) {
-            mAdapter.setValues(new ArrayList<Value>(values));
+            mAdapter.setmObjects(new ArrayList<Value>(values));
             mAdapter.notifyDataSetChanged();
         }
     }
@@ -235,8 +233,9 @@ public class ValuesChoiceFragment extends Fragment implements ValueChoiceAdapter
     }
 
     public void resetSelection(){
-        ArrayList<Value> temp = mAdapter.getValues();
-        mAdapter=new ValueChoiceAdapter(temp,this);
+        ArrayList<Value> temp = mAdapter.getmObjects();
+        Problem temp2 = mAdapter.getmHeaderObject();
+        mAdapter=new ValueChoiceAdapter(temp2,temp,this);
         mRecyclerView.setAdapter(mAdapter);
         mAdapter.notifyDataSetChanged();
         floattingButton.setImageResource(R.drawable.ic_content_add);
@@ -245,7 +244,7 @@ public class ValuesChoiceFragment extends Fragment implements ValueChoiceAdapter
 
     @Override
     public void onItemsSelected() {
-        if(mAdapter.getSelectedValues().isEmpty()){
+        if(mAdapter.getmSelectedObjects().isEmpty()){
             floattingButton.setImageResource(R.drawable.ic_content_add);
             isItemSelected=false;
         }else{

@@ -15,8 +15,8 @@ import java.util.ArrayList;
  */
 public abstract class GenericHeaderAdapter<T,H>  extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private static final int TYPE_HEADER = 0;
-    private static final int TYPE_ITEM = 1;
+    public static final int TYPE_HEADER = 0;
+    public static final int TYPE_ITEM = 1;
 
     public ArrayList<T> getmObjects() {
         return mObjects;
@@ -45,10 +45,15 @@ public abstract class GenericHeaderAdapter<T,H>  extends RecyclerView.Adapter<Re
     }
     HeaderAdapterInterface mListener;
 
+    public H getmHeaderObject() {
+        return mHeaderObject;
+    }
+
     private H mHeaderObject;
 
     int mHeaderRessourceId;
     int mItemRessourceId;
+
     public GenericHeaderAdapter(H headerObject,ArrayList<T> objects, HeaderAdapterInterface fragment, int headerRessource, int itemRessource) {
         this.mHeaderObject=headerObject;
         this.mObjects=objects;
@@ -56,22 +61,10 @@ public abstract class GenericHeaderAdapter<T,H>  extends RecyclerView.Adapter<Re
         this.mItemRessourceId=itemRessource;
         this.mSelectedObjects =new ArrayList<>();
         this.mListener = fragment;
-
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (viewType == TYPE_ITEM) {
-            View v = LayoutInflater.from(parent.getContext())
-                    .inflate(mItemRessourceId, parent, false);
-            return new VHItem(v);
-        } else if (viewType == TYPE_HEADER) {
-            View v = LayoutInflater.from(parent.getContext())
-                    .inflate(mHeaderRessourceId, parent, false);
-            return new VHHeader(v);
-        }
-        throw new RuntimeException("there is no type that matches the type " + viewType + " + make sure your using types correctly");
-    }
+    public abstract RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) ;
 
     @Override
     public abstract void onBindViewHolder(RecyclerView.ViewHolder holder, int position);
@@ -93,7 +86,7 @@ public abstract class GenericHeaderAdapter<T,H>  extends RecyclerView.Adapter<Re
         return position == 0;
     }
 
-    private T getItem(int position) {
+    protected T getItem(int position) {
         return mObjects.get(position-1);
     }
 
@@ -101,7 +94,7 @@ public abstract class GenericHeaderAdapter<T,H>  extends RecyclerView.Adapter<Re
     class VHItem extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView mTitle;
         TextView mDescription;
-        T object;
+        T mObject;
         public VHItem(View itemView) {
             super(itemView);
             mTitle = (TextView) itemView.findViewById(R.id.tv_title);
@@ -113,10 +106,10 @@ public abstract class GenericHeaderAdapter<T,H>  extends RecyclerView.Adapter<Re
             if(v.isSelected()){
                 v.setSelected(false);
                 v.setBackgroundColor(v.getResources().getColor(android.R.color.transparent));
-                mSelectedObjects.remove(object);
+                mSelectedObjects.remove(mObject);
             }else{
                 v.setSelected(true);
-                mSelectedObjects.add(object);
+                mSelectedObjects.add(mObject);
                 v.setBackgroundColor(v.getResources().getColor(R.color.selection_item));
             }
             mListener.onItemsSelected();

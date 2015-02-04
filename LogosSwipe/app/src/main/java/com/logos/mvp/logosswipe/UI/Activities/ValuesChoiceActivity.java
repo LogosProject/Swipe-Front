@@ -3,9 +3,12 @@ package com.logos.mvp.logosswipe.UI.activities;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.logos.mvp.logosswipe.R;
 import com.logos.mvp.logosswipe.UI.fragments.ValuesChoiceFragment;
@@ -16,6 +19,20 @@ public class ValuesChoiceActivity extends ActionBarActivity implements ValuesCho
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_values_choice);
+        Toolbar actionbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(actionbar);
+        if (null != actionbar) {
+            actionbar.setNavigationIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
+            actionbar.setNavigationOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    NavUtils.navigateUpFromSameTask(ValuesChoiceActivity.this);
+                }
+            });
+
+            // Inflate a menu to be displayed in the toolbar
+       //     actionbar.inflateMenu(R.menu.settings);
+        }
         if (savedInstanceState == null) {
 
             FragmentManager fragmentManager = getFragmentManager();

@@ -6,4 +6,22 @@
     <color name="primary_pressed">#B71C1C</color>
     <color name="ripple">#EF9A9A</color>
     <color name="selection_item">#E3F2FD</color>
+    <color name="dark_grey">#ff686b6d</color>
+
+    <color name="red">#f44336</color>
+    <color name="pink">#E91E63</color>
+    <color name="purple">#9C27B0</color>
+    <color name="deep_purple">#673AB7</color>
+    <color name="indigo">#3F51B5</color>
+    <color name="blue">#2196F3</color>
+    <color name="dark_blue">#0D47A1</color>
+    <color name="light_blue">#03A9F4</color>
+    <color name="cyan">#00BCD4</color>
+    <color name="teal">#009688</color>
+    <color name="green">#4CAF50</color>
+    <color name="light_green">#8BC34A</color>
+    <color name="lime">#CDDC39</color>
+    <color name="amber">#FFC107</color>
+    <color name="orange">#FF9800</color>
+
 </resources>

@@ -1,63 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.logos.mvp.logosswipe" >
-    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".App"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme"
-        android:name=".App">
-
+        android:theme="@style/Theme.AppTheme" >
         <activity
             android:name=".UI.activities.ProblemsChoiceActivity"
-            android:label="@string/app_name"
-            >
+            android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".UI.activities.ValuesChoiceActivity"
             android:label="@string/title_activity_values_choice"
-            android:parentActivityName=".UI.activities.ProblemsChoiceActivity"
-            android:launchMode="singleTop" >
+            android:launchMode="singleTop"
+            android:parentActivityName=".UI.activities.ProblemsChoiceActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".UI.activities.ProblemsChoiceActivity" />
         </activity>
-
         <activity
             android:name=".UI.activities.SolutionsChoiceActivity"
             android:label="@string/title_activity_solutions_choice"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".UI.activities.ValuesChoiceActivity" />
         </activity>
-
         <activity
             android:name=".UI.activities.ValuesRankActivity"
-            android:label="@string/title_activity_values_rank" >
+            android:label="@string/title_activity_values_rank"
+            android:launchMode="singleTop"
+            >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".UI.activities.SolutionsChoiceActivity" />
         </activity>
-
-        <activity
-            android:name=".UI.activities.VersusActivity"
-            android:label="@string/title_activity_versus"
-            android:parentActivityName=".UI.activities.SolutionsChoiceActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.logos.mvp.logosswipe.UI.activities.SolutionsChoiceActivity" />
-
-        </activity>
-
         <activity
             android:name=".UI.activities.FinalSolutionsActivity"
             android:label="@string/title_activity_final_solutions"
@@ -66,7 +53,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.logos.mvp.logosswipe.UI.activities.VersusActivity" />
         </activity>
-
+        <activity
+            android:name=".UI.activities.VersusActivity"
+            android:label="@string/title_activity_versus"
+            android:parentActivityName=".UI.activities.ValuesRankActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.logos.mvp.logosswipe.UI.activities.ValuesRankActivity" />
+        </activity>
     </application>
 
 </manifest>

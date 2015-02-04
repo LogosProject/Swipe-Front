@@ -15,21 +15,30 @@ import java.util.ArrayList;
 
 import greendao.Problem;
 
+
 /**
  * Created by Sylvain on 31/01/15.
  */
-public class ProblemsChoiceAdapter extends  RecyclerView.Adapter<ProblemsChoiceAdapter.ViewHolder> {
+public class ProblemsChoiceAdapter extends  GenericHeaderAdapter<Problem,String> {
 
-
-    private ArrayList<Problem> mProblems;
-
-    public ProblemsChoiceAdapter(ArrayList<Problem> problems){
-        mProblems=problems;
+    public ProblemsChoiceAdapter(String headerObject, ArrayList<Problem> objects, int headerRessource) {
+        super(headerObject, objects, null, headerRessource, 0);
     }
 
-    // Provide a reference to the views for each data item
-    // Complex data items may need more than one view per item, and
-    // you provide access to all the views for a data item in a view holder
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        if (viewType == TYPE_ITEM) {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.listview_item_problems_choice, parent, false);
+            return new ViewHolder(v);
+        } else if (viewType == TYPE_HEADER) {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(mHeaderRessourceId, parent, false);
+            return new VHHeader(v);
+        }
+        throw new RuntimeException("there is no type that matches the type " + viewType + " + make sure your using types correctly");
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         // each data item is just a string in this case
         public TextView mTitle;
@@ -59,29 +68,21 @@ public class ProblemsChoiceAdapter extends  RecyclerView.Adapter<ProblemsChoiceA
     }
 
     @Override
-    public ProblemsChoiceAdapter.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-        View v = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.listview_item_problems_choice, viewGroup, false);
-        // set the view's size, margins, paddings and layout parameters
-        return new ViewHolder(v);
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+
+        if (holder instanceof ViewHolder && getmObjects() !=null) {
+            ViewHolder item = (ViewHolder) holder;
+            Problem problem = getItem(position);
+            item.mTitle.setText(problem.getName());
+            item.mDescription.setText(problem.getDescription());
+            item.bindProblem(problem);
+
+        }else if(holder instanceof GenericHeaderAdapter<?,?>.VHHeader && getmHeaderObject() != null){
+            GenericHeaderAdapter.VHHeader item = (GenericHeaderAdapter.VHHeader) holder;
+            item.mTitle.setText(getmHeaderObject());
+            item.mDescription.setText("Sélectionnez ou créez une problématique ");
+        }
     }
 
-    @Override
-    public void onBindViewHolder(ProblemsChoiceAdapter.ViewHolder viewHolder, int i) {
-        Problem problem = mProblems.get(i);
-        viewHolder.mTitle.setText(problem.getName());
-        viewHolder.mDescription.setText(problem.getDescription());
-        viewHolder.bindProblem(problem);
-
-    }
-
-    @Override
-    public int getItemCount() {
-        return mProblems == null ? 0 : mProblems.size();
-    }
-
-    public void setProblems(ArrayList<Problem> mProblems) {
-        this.mProblems = mProblems;
-    }
 
 }

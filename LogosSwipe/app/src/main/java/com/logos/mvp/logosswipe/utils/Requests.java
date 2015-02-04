@@ -1,5 +1,7 @@
 package com.logos.mvp.logosswipe.utils;
 
+import greendao.Solution;
+
 /**
  * Created by Sylvain on 30/01/15.
  */
@@ -18,6 +20,10 @@ public class Requests {
         return getProblemsUrl()+"/"+problemId+"/solutions";
     }
 
+    public static String getNextVersusProblem(long problemId){
+        return getProblemsUrl()+"/"+problemId+"/versus/next";
+    }
+
     // ** POST **//
     public static String postProblemUrl(){
         return SERVER_URL+"problems";
@@ -30,4 +36,8 @@ public class Requests {
     public static String postSolutionProblemUrl(Long problemId){
         return postProblemUrl()+"/"+problemId+"/solutions";
     }
+    public static String postValueScoreUrl(Long valueId){
+        return SERVER_URL+"values/"+valueId+"/valuescores";
+    }
+
 }

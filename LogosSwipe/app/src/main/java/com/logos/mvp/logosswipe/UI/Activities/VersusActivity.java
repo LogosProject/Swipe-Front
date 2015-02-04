@@ -1,22 +1,33 @@
 package com.logos.mvp.logosswipe.UI.activities;
 
-import android.os.Bundle;
+import java.util.Locale;
+
+import android.net.Uri;
+import android.support.v4.app.NavUtils;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBarActivity;
-import android.view.LayoutInflater;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
+
 
 import com.logos.mvp.logosswipe.R;
+import com.logos.mvp.logosswipe.UI.fragments.ChatFragment;
+import com.logos.mvp.logosswipe.UI.fragments.CompareSolutionFragment;
+import com.logos.mvp.logosswipe.UI.fragments.SolutionsChoiceFragment;
+import com.logos.mvp.logosswipe.UI.fragments.ValuesChoiceFragment;
+import com.logos.mvp.logosswipe.UI.fragments.ValuesRankFragment;
 
-import java.util.Locale;
+import it.neokree.materialtabs.MaterialTab;
+import it.neokree.materialtabs.MaterialTabHost;
+import it.neokree.materialtabs.MaterialTabListener;
 
-public class VersusActivity extends ActionBarActivity {
+public class VersusActivity extends ActionBarActivity implements ChatFragment.OnFragmentInteractionListener,CompareSolutionFragment.OnFragmentInteractionListener, MaterialTabListener {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -33,19 +44,59 @@ public class VersusActivity extends ActionBarActivity {
      */
     ViewPager mViewPager;
 
+    MaterialTabHost tabHost;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_versus);
+        Toolbar actionbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(actionbar);
 
+        if (null != actionbar) {
 
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+            actionbar.setNavigationIcon(R.drawable.abc_ic_ab_back_mtrl_am_alpha);
+            actionbar.setNavigationOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    NavUtils.navigateUpFromSameTask(VersusActivity.this);
+                }
+            });
 
+            // Inflate a menu to be displayed in the toolbar
+            //     actionbar.inflateMenu(R.menu.settings);
+        }
+        tabHost = (MaterialTabHost) this.findViewById(R.id.materialTabHost);
+
+        Long problemId = -1L;
+        long[] valueIds = new long[0];
+        long[] solutionsIds = new long[0];
+        if (getIntent().getExtras() != null) {
+            problemId = getIntent().getExtras().getLong(ValuesChoiceFragment.ARG_PROBLEM_ID);
+            valueIds = getIntent().getExtras().getLongArray(SolutionsChoiceFragment.ARG_VALUE_IDS);
+            solutionsIds = getIntent().getExtras().getLongArray(ValuesRankFragment.ARG_SOLUTION_IDS);
+        }
+
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(),problemId,valueIds,solutionsIds);
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                // when user do a swipe the selected tab change
+                tabHost.setSelectedNavigationItem(position);
+            }
+        });
+
+        // insert all tabs from pagerAdapter data
+        for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
+            tabHost.addTab(
+                    tabHost.newTab()
+                            .setText(mSectionsPagerAdapter.getPageTitle(i))
+                            .setTabListener(this)
+            );
+        }
+
 
     }
 
@@ -72,28 +123,61 @@ public class VersusActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
+    }
+
+    @Override
+    public void onTabSelected(MaterialTab materialTab) {
+        mViewPager.setCurrentItem(materialTab.getPosition());
+
+    }
+
+    @Override
+    public void onTabReselected(MaterialTab materialTab) {
+
+    }
+
+    @Override
+    public void onTabUnselected(MaterialTab materialTab) {
+
+    }
+
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
+        Long problemId = -1L;
+        long[] valueIds = new long[0];
+        long[] solutionsIds = new long[0];
 
-        public SectionsPagerAdapter(FragmentManager fm) {
+        public SectionsPagerAdapter(FragmentManager fm, long problemId, long[] valueIds, long[] solutionIds) {
             super(fm);
+            this.problemId=problemId;
+            this.valueIds=valueIds;
+            this.solutionsIds=solutionIds;
         }
 
         @Override
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            switch (position){
+                case 0:
+                    return CompareSolutionFragment.newInstance(problemId,valueIds,solutionsIds);
+                case 1:
+                    return ChatFragment.newInstance("","");
+                default:
+                    return null;
+            }
         }
 
         @Override
         public int getCount() {
             // Show 3 total pages.
-            return 3;
+            return 2;
         }
 
         @Override
@@ -104,46 +188,12 @@ public class VersusActivity extends ActionBarActivity {
                     return getString(R.string.title_section1).toUpperCase(l);
                 case 1:
                     return getString(R.string.title_section2).toUpperCase(l);
-                case 2:
-                    return getString(R.string.title_section3).toUpperCase(l);
+
             }
             return null;
         }
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
 
-        // TODO fragment here : fill layout
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_versus, container, false);
-            return rootView;
-        }
-    }
 
 }

@@ -22,6 +22,10 @@ import greendao.ValueScore;
  */
 public class ValueRankAdapter extends GenericHeaderAdapter<Value, Problem> {
 
+    public ArrayList<ValueScore> getmValueScores() {
+        return mValueScores;
+    }
+
     private ArrayList<ValueScore> mValueScores;
 
 

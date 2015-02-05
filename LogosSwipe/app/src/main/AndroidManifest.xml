@@ -18,6 +18,8 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+
         </activity>
         <activity
             android:name=".UI.activities.ValuesChoiceActivity"
@@ -39,19 +41,10 @@
         <activity
             android:name=".UI.activities.ValuesRankActivity"
             android:label="@string/title_activity_values_rank"
-            android:launchMode="singleTop"
-            >
+            android:launchMode="singleTop" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".UI.activities.SolutionsChoiceActivity" />
-        </activity>
-        <activity
-            android:name=".UI.activities.FinalSolutionsActivity"
-            android:label="@string/title_activity_final_solutions"
-            android:parentActivityName=".UI.activities.VersusActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.logos.mvp.logosswipe.UI.activities.VersusActivity" />
         </activity>
         <activity
             android:name=".UI.activities.VersusActivity"
@@ -60,6 +53,11 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.logos.mvp.logosswipe.UI.activities.ValuesRankActivity" />
+        </activity>
+        <activity
+            android:name=".UI.activities.SolutionsPresentationActivity"
+            android:label="@string/title_activity_solutions_presentation" >
+
         </activity>
     </application>
 

@@ -177,14 +177,6 @@ public class SolutionsChoiceFragment extends Fragment implements GenericHeaderAd
                     @Override
                     public void onResponse(String response) {
                         Log.d(TAG,response);
-
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d("Error.Response", error.toString());
-                        Toast.makeText(getActivity(),"Impossible de publier la sélection",Toast.LENGTH_SHORT);
                         Intent nextIntent = new Intent(getActivity(), ValuesRankActivity.class);
                         nextIntent.putExtra(ValuesChoiceFragment.ARG_PROBLEM_ID, mProblemId);
                         nextIntent.putExtra(SolutionsChoiceFragment.ARG_VALUE_IDS, mValueIds);
@@ -195,15 +187,23 @@ public class SolutionsChoiceFragment extends Fragment implements GenericHeaderAd
                         nextIntent.putExtra(ValuesRankFragment.ARG_SOLUTION_IDS, array);
                         getActivity().startActivity(nextIntent);
                     }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("Error.Response", error.toString());
+
+                    }
                 }) {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<String, String>();
                 for(int i=0;i<mAdapter.getmSelectedObjects().size();i++){
                     params.put("solutionsId", String.valueOf(mAdapter.getmSelectedObjects().get(i).getId()));
+                    Log.d(TAG,"solutionsId : "+String.valueOf(mAdapter.getmSelectedObjects().get(i).getId()));
                 }
                 //TODO : correct this
-                params.put("userId", "1");
+                params.put("userId", Requests.USER_ID);
 
                 return params;
             }

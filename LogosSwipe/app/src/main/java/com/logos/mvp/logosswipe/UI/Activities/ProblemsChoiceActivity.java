@@ -36,7 +36,7 @@ public class ProblemsChoiceActivity extends ActionBarActivity implements Problem
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_problems_choice, menu);
         return true;
     }
 

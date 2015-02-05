@@ -24,6 +24,7 @@ import greendao.VersusDao;
  * Created by Sylvain on 30/01/15.
  */
 public class JSONConverter {
+
     public static Problem problemConverter(JSONObject obj) throws JSONException{
         String id = obj.getString("id");
         String name = obj.getString("name");
@@ -37,12 +38,14 @@ public class JSONConverter {
 
         return new Value(Long.parseLong(id),name,description,problemId);
     }
+
     public static Solution solutionConverter(JSONObject obj,Long problemId) throws JSONException{
         String id = obj.getString("id");
         String name = obj.getString("name");
         String description = obj.getString("description");
         return new Solution(Long.parseLong(id),name,description,problemId);
     }
+
     public static Versus versusConverter(JSONObject obj) throws JSONException{
         String id = obj.getString("id");
         ProblemDao problemDao = App.getInstance().getSession().getProblemDao();

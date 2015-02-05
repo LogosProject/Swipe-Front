@@ -173,7 +173,7 @@ public class ValuesRankFragment extends Fragment {
                     Map<String, String> params = new HashMap<String, String>();
                     params.put("score", String.valueOf(mAdapter.getmValueScores().get(mNbValueScoresToSend - 1).getScore()));
                     //TODO : correct this
-                    params.put("userId", "1");
+                    params.put("userId", Requests.USER_ID);
 
                     return params;
                 }

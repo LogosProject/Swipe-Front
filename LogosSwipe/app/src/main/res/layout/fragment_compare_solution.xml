@@ -5,15 +5,44 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.logos.mvp.logosswipe.UI.fragments.CompareSolutionFragment">
-
-    <com.logos.mvp.logosswipe.UI.views.SolutionView
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:drawable/dialog_holo_light_frame"
-        android:orientation="vertical"
-        android:padding="@dimen/activity_horizontal_margin"
-        android:id="@+id/solution_up"
-       />
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center"
+            >
+            <com.logos.mvp.logosswipe.UI.views.SolutionView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/activity_horizontal_margin"
+                android:id="@+id/solution_up"
+               />
+
+            <SeekBar
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="10dp"
+                android:id="@+id/mySeekBar"
+                />
+            <com.logos.mvp.logosswipe.UI.views.SolutionView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/activity_horizontal_margin"
+                android:id="@+id/solution_down"
+                >
+            </com.logos.mvp.logosswipe.UI.views.SolutionView>
+
+        </LinearLayout>
+    </ScrollView>
+
 
     <Button
         android:layout_width="match_parent"
@@ -24,37 +53,6 @@
         android:background="?android:attr/selectableItemBackground"
         android:textColor="@color/blue"
         />
-    <com.logos.mvp.logosswipe.UI.views.SolutionView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:drawable/dialog_holo_light_frame"
-        android:orientation="vertical"
-        android:padding="@dimen/activity_horizontal_margin"
-        android:id="@+id/solution_down"
-        android:layout_above="@id/bt_next_versus"
-        >
-    </com.logos.mvp.logosswipe.UI.views.SolutionView>
-    <com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBarWrapper
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:layout_gravity="center_horizontal"
-        android:id="@+id/wrapper"
-        android:layout_below="@id/solution_up"
-        android:layout_above="@id/solution_down"
-        android:layout_centerHorizontal="true"
-        >
-        <com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar
-            android:id="@+id/mySeekBar"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:seekBarRotation="CW90"
-            android:progressDrawable="@drawable/progressbar"
-            android:secondaryProgress="0"
-            /> <!-- Rotation: CW90 or CW270 -->
-    </com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBarWrapper>
-
-
 
     <ProgressBar
         android:id="@+id/progress"

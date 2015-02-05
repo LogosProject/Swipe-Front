@@ -87,8 +87,11 @@ public class CreationDialog extends DialogFragment {
                                         Log.d(TAG,response);
                                         break;
                                     case SOLUTION:
-                                        ((DebateFragment)getTargetFragment()).requestComments();
+                                        ((SolutionsChoiceFragment)getTargetFragment()).launchRequest();
                                         Log.d(TAG,response);
+                                        break;
+                                    case COMMENT:
+                                        ((DebateFragment)getTargetFragment()).requestComments();
                                         break;
                                 }
                                 Log.d("Response", response.toString());

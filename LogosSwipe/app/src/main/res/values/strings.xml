@@ -16,7 +16,6 @@
     <string name="title_activity_versus">Versus</string>
     <string name="title_activity_final_solutions">Final Solutions</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
-
     <string name="new_problem">Nouvelle problématique</string>
     <string name="new_solution">Nouvelle solution</string>
     <string name="new_value">Nouvelle valeur</string>
@@ -28,5 +27,6 @@
     <string name="enter_new_value_description">Description</string>
     <string name="cancel">Annuler</string>
     <string name="create">Créer</string>
+    <string name="title_activity_solutions_presentation">SolutionsPresentationActivity</string>
 
 </resources>

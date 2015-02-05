@@ -7,7 +7,7 @@ import greendao.Solution;
  */
 public class Requests {
     private static final String SERVER_URL="http://178.62.199.79:8080/swipe-back/";
-
+    public static final String USER_ID="107";
 
     // ** GET **//
     public static String getProblemsUrl(){
@@ -21,7 +21,7 @@ public class Requests {
     }
 
     public static String getNextVersusProblem(long problemId){
-        return getProblemsUrl()+"/"+problemId+"/versus/next";
+        return getProblemsUrl()+"/"+problemId+"/versus/next/?userId=107";
     }
     public static String getVersusComments(long versusId){
         return SERVER_URL+"versus/"+versusId+"/comments";

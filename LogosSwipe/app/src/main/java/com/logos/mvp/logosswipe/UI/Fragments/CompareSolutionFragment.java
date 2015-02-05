@@ -1,6 +1,7 @@
 package com.logos.mvp.logosswipe.UI.fragments;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.support.v4.app.Fragment;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,12 +11,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar;
+import com.android.volley.toolbox.StringRequest;
 import com.logos.mvp.logosswipe.App;
 import com.logos.mvp.logosswipe.R;
 import com.logos.mvp.logosswipe.UI.activities.ValuesChoiceActivity;
@@ -26,12 +28,17 @@ import com.logos.mvp.logosswipe.utils.Requests;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
 import greendao.Problem;
 import greendao.ProblemDao;
+import greendao.Solution;
+import greendao.SolutionDao;
+import greendao.Versus;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -52,9 +59,11 @@ public class CompareSolutionFragment extends Fragment {
     private SolutionView mSolutionViewUp;
     private SolutionView mSolutionViewDown;
     private ProgressBar mProgress;
-    private VerticalSeekBar mSeekbar;
+    private SeekBar mSeekbar;
     private Button mNextVersus;
     private OnFragmentInteractionListener mListener;
+
+    float[] hsv = {150.0f,0.5f,1.0f};
 
 
     public static CompareSolutionFragment newInstance(long problemId,long[] valueIds, long[] solutionsIds) {
@@ -89,8 +98,42 @@ public class CompareSolutionFragment extends Fragment {
         mSolutionViewUp =(SolutionView) view.findViewById(R.id.solution_up);
         mSolutionViewDown =(SolutionView) view.findViewById(R.id.solution_down);
         mProgress = (ProgressBar) view.findViewById(R.id.progress);
-        mSeekbar = (VerticalSeekBar) view.findViewById(R.id.mySeekBar);
+        mSeekbar = (SeekBar) view.findViewById(R.id.mySeekBar);
+        mSeekbar.setMax(100);
+        mSeekbar.setProgress(50);
+        mSolutionViewUp.setBackgroundColor(Color.HSVToColor(hsv));
+        mSolutionViewDown.setBackgroundColor(Color.HSVToColor(hsv));
+        mSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                Log.d(TAG,""+progress);
+                float saturation = ((100.0f-progress)/100.0f);
+                Log.d(TAG,""+saturation);
+                hsv[1]=saturation;
+                mSolutionViewUp.setBackgroundColor(Color.HSVToColor(hsv));
+                saturation = ((progress)/100.0f);
+                hsv[1]=saturation;
+                mSolutionViewDown.setBackgroundColor(Color.HSVToColor(hsv));
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
         mNextVersus =(Button) view.findViewById(R.id.bt_next_versus);
+        mNextVersus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
         launchVersusRequest();
         showLoading();
         return view;
@@ -114,19 +157,24 @@ public class CompareSolutionFragment extends Fragment {
 
     public void launchVersusRequest(){
         // Instantiate the RequestQueue.
-        JsonArrayRequest jReq = new JsonArrayRequest(Requests.getNextVersusProblem(problemId),
-                new Response.Listener<JSONArray>() {
+        final StringRequest jReq = new StringRequest(Requests.getNextVersusProblem(problemId),
+                new Response.Listener<String>() {
                     @Override
-                    public void onResponse(JSONArray response) {
-                        for (int i = 0; i < response.length(); i++) {
-                            try {
-                                Log.e(TAG, response.get(i).toString());
-                               /* Problem problem = JSONConverter.problemConverter(response.getJSONObject(i));
-                                ProblemDao problemDao = App.getInstance().getSession().getProblemDao();
-                                problemDao.insertOrReplace(problem);*/
-                            } catch (JSONException e) {
-                                Log.e(TAG, e.toString());
+                    public void onResponse(String response) {
+                        try {
+                            if(!response.isEmpty()) {
+                                Versus versus = JSONConverter.versusConverter(new JSONObject(response));
+                                SolutionDao solutionDao = App.getSession().getSolutionDao();
+                                Solution solution1 = solutionDao.load(versus.getSolution1Id());
+                                Solution solution2 = solutionDao.load(versus.getSolution2Id());
+                                mSolutionViewUp.setTitle(solution1.getName());
+                                mSolutionViewUp.setContent(solution1.getDescription());
+                                mSolutionViewDown.setTitle(solution2.getName());
+                                mSolutionViewDown.setContent(solution2.getDescription());
                             }
+                            showContent();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
                         //notifyRefresh();
                     }
@@ -136,19 +184,10 @@ public class CompareSolutionFragment extends Fragment {
             public void onErrorResponse(VolleyError error) {
                 //mSwipeRefreshLayout.setRefreshing(false);
 
-                Log.e(TAG,"VolleyError : "+ error.toString());
+                Log.e(TAG,"VolleyError LaunchVersusRequest : "+ error.toString());
 
             }
-        }){
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<String, String>();
-              
-                params.put("userId", "1");
-
-                return params;
-            }
-        };
+        });
         RequestQueueSingleton.getInstance(this.getActivity().getApplicationContext()).addToRequestQueue(jReq);
 
     }

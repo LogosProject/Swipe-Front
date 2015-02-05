@@ -4,7 +4,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.logos.mvp.logosswipe.R;
 
@@ -12,7 +11,6 @@ import java.util.ArrayList;
 
 import greendao.Problem;
 import greendao.Solution;
-import greendao.Value;
 
 /**
  * Created by Sylvain on 31/01/15.
@@ -21,7 +19,7 @@ public class SolutionChoiceAdapter extends GenericHeaderAdapter<Solution, Proble
 
 
     public SolutionChoiceAdapter(Problem problem,ArrayList<Solution> values, GenericHeaderAdapter.HeaderAdapterInterface fragment) {
-        super(problem,values,fragment,R.layout.header_item,R.layout.listview_item_choice);
+        super(problem,values,fragment,R.layout.item_header,R.layout.listview_item_choice);
     }
 
     @Override

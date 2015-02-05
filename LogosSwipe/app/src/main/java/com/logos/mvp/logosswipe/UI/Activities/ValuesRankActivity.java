@@ -1,8 +1,8 @@
 package com.logos.mvp.logosswipe.UI.activities;
 
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
@@ -37,7 +37,7 @@ public class ValuesRankActivity extends ActionBarActivity implements ValuesRankF
         }
         if (savedInstanceState == null) {
 
-            FragmentManager fragmentManager = getFragmentManager();
+            FragmentManager fragmentManager = getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             Long problemId = -1L;
             long[] valueIds = new long[0];

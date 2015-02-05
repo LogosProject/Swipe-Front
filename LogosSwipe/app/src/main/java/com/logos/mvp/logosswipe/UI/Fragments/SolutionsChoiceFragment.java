@@ -1,9 +1,9 @@
 package com.logos.mvp.logosswipe.UI.fragments;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,13 +13,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.logos.mvp.logosswipe.App;
 import com.logos.mvp.logosswipe.R;
 import com.logos.mvp.logosswipe.UI.activities.ValuesRankActivity;
+import com.logos.mvp.logosswipe.UI.activities.VersusActivity;
 import com.logos.mvp.logosswipe.UI.adapters.GenericHeaderAdapter;
 import com.logos.mvp.logosswipe.UI.adapters.SolutionChoiceAdapter;
 import com.logos.mvp.logosswipe.UI.dialogs.CreationDialog;
@@ -33,7 +37,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.greenrobot.dao.query.QueryBuilder;
 import greendao.Problem;
@@ -145,16 +151,8 @@ public class SolutionsChoiceFragment extends Fragment implements GenericHeaderAd
                     dialog.setTargetFragment(SolutionsChoiceFragment.this, 0);
                     dialog.show(getFragmentManager(), CreationDialog.TAG);
                 }else{
-                   // TODO : do
-                    Intent nextIntent = new Intent(v.getContext(), ValuesRankActivity.class);
-                    nextIntent.putExtra(ValuesChoiceFragment.ARG_PROBLEM_ID, mProblemId);
-                    nextIntent.putExtra(SolutionsChoiceFragment.ARG_VALUE_IDS, mValueIds);
-                    long[] array = new long[mAdapter.getmSelectedObjects().size()];
-                    for(int i = 0; i< mAdapter.getmSelectedObjects().size();i++){
-                        array[i]=mAdapter.getmSelectedObjects().get(i).getId();
-                    }
-                    nextIntent.putExtra(ValuesRankFragment.ARG_SOLUTION_IDS, array);
-                    v.getContext().startActivity(nextIntent);
+                    publishSelection();
+
                 }
 
             }
@@ -173,6 +171,45 @@ public class SolutionsChoiceFragment extends Fragment implements GenericHeaderAd
         return view;
     }
 
+    public void publishSelection(){
+        StringRequest postRequest = new StringRequest(Request.Method.POST, Requests.postSolutionsSelectedUrl(mProblemId),
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d(TAG,response);
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("Error.Response", error.toString());
+                        Toast.makeText(getActivity(),"Impossible de publier la sélection",Toast.LENGTH_SHORT);
+                        Intent nextIntent = new Intent(getActivity(), ValuesRankActivity.class);
+                        nextIntent.putExtra(ValuesChoiceFragment.ARG_PROBLEM_ID, mProblemId);
+                        nextIntent.putExtra(SolutionsChoiceFragment.ARG_VALUE_IDS, mValueIds);
+                        long[] array = new long[mAdapter.getmSelectedObjects().size()];
+                        for(int i = 0; i< mAdapter.getmSelectedObjects().size();i++){
+                            array[i]=mAdapter.getmSelectedObjects().get(i).getId();
+                        }
+                        nextIntent.putExtra(ValuesRankFragment.ARG_SOLUTION_IDS, array);
+                        getActivity().startActivity(nextIntent);
+                    }
+                }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+                for(int i=0;i<mAdapter.getmSelectedObjects().size();i++){
+                    params.put("solutionsId", String.valueOf(mAdapter.getmSelectedObjects().get(i).getId()));
+                }
+                //TODO : correct this
+                params.put("userId", "1");
+
+                return params;
+            }
+        };
+        RequestQueueSingleton.getInstance(getActivity().getApplicationContext()).addToRequestQueue(postRequest);
+    }
     public void launchRequest(){
         // Instantiate the RequestQueue.
         JsonArrayRequest jReq = new JsonArrayRequest(Requests.getSolutionsProblemUrl(mProblemId),

@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.volley.Response;
@@ -17,12 +19,16 @@ import com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar;
 import com.logos.mvp.logosswipe.App;
 import com.logos.mvp.logosswipe.R;
 import com.logos.mvp.logosswipe.UI.activities.ValuesChoiceActivity;
+import com.logos.mvp.logosswipe.UI.views.SolutionView;
 import com.logos.mvp.logosswipe.network.RequestQueueSingleton;
 import com.logos.mvp.logosswipe.utils.JSONConverter;
 import com.logos.mvp.logosswipe.utils.Requests;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import greendao.Problem;
 import greendao.ProblemDao;
@@ -43,13 +49,11 @@ public class CompareSolutionFragment extends Fragment {
     private long[] valueIds = new long[0];
     private long[] solutionsIds = new long[0];
 
-    private TextView mTitleUp;
-    private TextView mTitleDown;
-    private TextView mDescriptionUp;
-    private TextView mDescriptionDown;
-
+    private SolutionView mSolutionViewUp;
+    private SolutionView mSolutionViewDown;
+    private ProgressBar mProgress;
     private VerticalSeekBar mSeekbar;
-
+    private Button mNextVersus;
     private OnFragmentInteractionListener mListener;
 
 
@@ -82,23 +86,39 @@ public class CompareSolutionFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view =  inflater.inflate(R.layout.fragment_compare_solution, container, false);
-        mTitleUp =(TextView) view.findViewById(R.id.tv_title_up);
-        mTitleDown =(TextView) view.findViewById(R.id.tv_title_down);
-        mDescriptionUp =(TextView) view.findViewById(R.id.tv_description_up);
-        mDescriptionDown =(TextView) view.findViewById(R.id.tv_description_down);
-
+        mSolutionViewUp =(SolutionView) view.findViewById(R.id.solution_up);
+        mSolutionViewDown =(SolutionView) view.findViewById(R.id.solution_down);
+        mProgress = (ProgressBar) view.findViewById(R.id.progress);
         mSeekbar = (VerticalSeekBar) view.findViewById(R.id.mySeekBar);
+        mNextVersus =(Button) view.findViewById(R.id.bt_next_versus);
         launchVersusRequest();
+        showLoading();
         return view;
     }
+    public void showContent(){
+        mSolutionViewDown.setVisibility(View.VISIBLE);
+        mSolutionViewUp.setVisibility(View.VISIBLE);
+        mSeekbar.setVisibility(View.VISIBLE);
+        mNextVersus.setVisibility(View.VISIBLE);
+        mProgress.setVisibility(View.GONE);
+    }
+
+    public void showLoading(){
+        mSolutionViewDown.setVisibility(View.GONE);
+        mSolutionViewUp.setVisibility(View.GONE);
+        mSeekbar.setVisibility(View.GONE);
+        mNextVersus.setVisibility(View.GONE);
+        mProgress.setVisibility(View.VISIBLE);
+        mProgress.setIndeterminate(true);
+    }
+
     public void launchVersusRequest(){
         // Instantiate the RequestQueue.
-        JsonArrayRequest jReq = new JsonArrayRequest(Requests.getValuesProblemUrl(problemId),
+        JsonArrayRequest jReq = new JsonArrayRequest(Requests.getNextVersusProblem(problemId),
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
                         for (int i = 0; i < response.length(); i++) {
-
                             try {
                                 Log.e(TAG, response.get(i).toString());
                                /* Problem problem = JSONConverter.problemConverter(response.getJSONObject(i));
@@ -119,7 +139,16 @@ public class CompareSolutionFragment extends Fragment {
                 Log.e(TAG,"VolleyError : "+ error.toString());
 
             }
-        });
+        }){
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+              
+                params.put("userId", "1");
+
+                return params;
+            }
+        };
         RequestQueueSingleton.getInstance(this.getActivity().getApplicationContext()).addToRequestQueue(jReq);
 
     }

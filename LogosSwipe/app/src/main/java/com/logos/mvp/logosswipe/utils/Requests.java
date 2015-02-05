@@ -23,18 +23,28 @@ public class Requests {
     public static String getNextVersusProblem(long problemId){
         return getProblemsUrl()+"/"+problemId+"/versus/next";
     }
-
+    public static String getVersusComments(long versusId){
+        return SERVER_URL+"versus/"+versusId+"/comments";
+    }
     // ** POST **//
     public static String postProblemUrl(){
         return SERVER_URL+"problems";
     }
 
+    public static String postCommentVersusUrl(long versusId)
+    {
+        return SERVER_URL+"versus/"+versusId+"/comments";
+    }
     public static String postValueProblemUrl(Long problemId){
         return postProblemUrl()+"/"+problemId+"/values";
     }
 
     public static String postSolutionProblemUrl(Long problemId){
         return postProblemUrl()+"/"+problemId+"/solutions";
+    }
+
+    public static String postSolutionsSelectedUrl(long problemId){
+        return postProblemUrl()+"/"+problemId+"/solutions/select";
     }
     public static String postValueScoreUrl(Long valueId){
         return SERVER_URL+"values/"+valueId+"/valuescores";

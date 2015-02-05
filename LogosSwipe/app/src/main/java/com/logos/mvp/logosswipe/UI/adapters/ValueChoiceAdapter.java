@@ -4,7 +4,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.logos.mvp.logosswipe.R;
 
@@ -20,7 +19,7 @@ public class ValueChoiceAdapter extends GenericHeaderAdapter<Value, Problem> {
 
 
     public ValueChoiceAdapter(Problem problem,ArrayList<Value> values, HeaderAdapterInterface fragment) {
-        super(problem,values,fragment,R.layout.header_item,R.layout.listview_item_choice);
+        super(problem,values,fragment,R.layout.item_header,R.layout.listview_item_choice);
     }
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {

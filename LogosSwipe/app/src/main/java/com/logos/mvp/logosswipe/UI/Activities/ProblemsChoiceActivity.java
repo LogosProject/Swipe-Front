@@ -1,8 +1,8 @@
 package com.logos.mvp.logosswipe.UI.activities;
 
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -21,7 +21,7 @@ public class ProblemsChoiceActivity extends ActionBarActivity implements Problem
         setSupportActionBar(toolbar);
         if (savedInstanceState == null) {
 
-            FragmentManager fragmentManager = getFragmentManager();
+            FragmentManager fragmentManager = getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
             ProblemsChoiceFragment fragment = ProblemsChoiceFragment.newInstance("", "");

@@ -17,7 +17,7 @@ import android.view.View;
 
 
 import com.logos.mvp.logosswipe.R;
-import com.logos.mvp.logosswipe.UI.fragments.ChatFragment;
+import com.logos.mvp.logosswipe.UI.fragments.DebateFragment;
 import com.logos.mvp.logosswipe.UI.fragments.CompareSolutionFragment;
 import com.logos.mvp.logosswipe.UI.fragments.SolutionsChoiceFragment;
 import com.logos.mvp.logosswipe.UI.fragments.ValuesChoiceFragment;
@@ -27,7 +27,7 @@ import it.neokree.materialtabs.MaterialTab;
 import it.neokree.materialtabs.MaterialTabHost;
 import it.neokree.materialtabs.MaterialTabListener;
 
-public class VersusActivity extends ActionBarActivity implements ChatFragment.OnFragmentInteractionListener,CompareSolutionFragment.OnFragmentInteractionListener, MaterialTabListener {
+public class VersusActivity extends ActionBarActivity implements DebateFragment.OnFragmentInteractionListener,CompareSolutionFragment.OnFragmentInteractionListener, MaterialTabListener {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -45,6 +45,9 @@ public class VersusActivity extends ActionBarActivity implements ChatFragment.On
     ViewPager mViewPager;
 
     MaterialTabHost tabHost;
+
+    long mCurrentVersus=-1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -168,7 +171,7 @@ public class VersusActivity extends ActionBarActivity implements ChatFragment.On
                 case 0:
                     return CompareSolutionFragment.newInstance(problemId,valueIds,solutionsIds);
                 case 1:
-                    return ChatFragment.newInstance("","");
+                    return DebateFragment.newInstance("", "");
                 default:
                     return null;
             }
@@ -176,7 +179,6 @@ public class VersusActivity extends ActionBarActivity implements ChatFragment.On
 
         @Override
         public int getCount() {
-            // Show 3 total pages.
             return 2;
         }
 
@@ -194,6 +196,12 @@ public class VersusActivity extends ActionBarActivity implements ChatFragment.On
         }
     }
 
+    public long getmCurrentVersus() {
+        return mCurrentVersus;
+    }
 
+    public void setmCurrentVersus(long mCurrentVersus) {
+        this.mCurrentVersus = mCurrentVersus;
+    }
 
 }

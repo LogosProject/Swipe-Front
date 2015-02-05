@@ -2,9 +2,9 @@ package com.logos.mvp.logosswipe.UI.dialogs;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -14,6 +14,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.logos.mvp.logosswipe.R;
+import com.logos.mvp.logosswipe.UI.activities.VersusActivity;
+import com.logos.mvp.logosswipe.UI.fragments.DebateFragment;
 import com.logos.mvp.logosswipe.UI.fragments.ProblemsChoiceFragment;
 import com.logos.mvp.logosswipe.UI.fragments.SolutionsChoiceFragment;
 import com.logos.mvp.logosswipe.UI.fragments.ValuesChoiceFragment;
@@ -36,7 +38,8 @@ public class CreationDialog extends DialogFragment {
         NONE,
         PROBLEM,
         VALUE,
-        SOLUTION
+        SOLUTION,
+        COMMENT
     }
     private DIALOG_MODE mDialogMode;
 
@@ -44,7 +47,6 @@ public class CreationDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         if (getArguments()!=null){
             mDialogMode = (DIALOG_MODE)getArguments().getSerializable(ARG_MODE);
-
         }
         View dialogView = getActivity().getLayoutInflater().inflate(R.layout.dialog_creator, null);
         mEtTitle = (EditText) dialogView.findViewById(R.id.et_title);
@@ -66,6 +68,9 @@ public class CreationDialog extends DialogFragment {
                     case SOLUTION:
                         url=Requests.postSolutionProblemUrl(((SolutionsChoiceFragment) getTargetFragment()).getProblemId());
                         break;
+                    case COMMENT:
+                        url=Requests.postCommentVersusUrl(((VersusActivity)((getTargetFragment()).getActivity())).getmCurrentVersus());
+                        break;
                 }
                 StringRequest postRequest = new StringRequest(Request.Method.POST,url,
                         new Response.Listener<String>()
@@ -82,7 +87,7 @@ public class CreationDialog extends DialogFragment {
                                         Log.d(TAG,response);
                                         break;
                                     case SOLUTION:
-                                        ((SolutionsChoiceFragment)getTargetFragment()).launchRequest();
+                                        ((DebateFragment)getTargetFragment()).requestComments();
                                         Log.d(TAG,response);
                                         break;
                                 }

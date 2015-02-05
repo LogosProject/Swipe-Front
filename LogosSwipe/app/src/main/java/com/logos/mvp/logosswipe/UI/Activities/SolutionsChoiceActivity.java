@@ -1,8 +1,8 @@
 package com.logos.mvp.logosswipe.UI.activities;
 
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
@@ -36,7 +36,7 @@ public class SolutionsChoiceActivity extends ActionBarActivity implements Soluti
         }
         if (savedInstanceState == null) {
 
-            FragmentManager fragmentManager = getFragmentManager();
+            FragmentManager fragmentManager = getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             Long problemId = -1L;
             long[] array = new long[0];
@@ -53,7 +53,7 @@ public class SolutionsChoiceActivity extends ActionBarActivity implements Soluti
 
     @Override
     public void onBackPressed() {
-        SolutionsChoiceFragment fragment =(SolutionsChoiceFragment) getFragmentManager().findFragmentByTag(SolutionsChoiceFragment.TAG);
+        SolutionsChoiceFragment fragment =(SolutionsChoiceFragment) getSupportFragmentManager().findFragmentByTag(SolutionsChoiceFragment.TAG);
         if(fragment != null && fragment.isItemSelected()){
             fragment.resetSelection();
             return;

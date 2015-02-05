@@ -36,6 +36,6 @@ dependencies {
     compile 'com.yqritc:recyclerview-flexibledivider:1.1.0'
     compile 'com.h6ah4i.android.widget.verticalseekbar:verticalseekbar:0.5.1'
     compile 'it.neokree:MaterialTabs:0.11'
-
+    compile 'com.jjoe64:graphview:4.0.0'
 
 }

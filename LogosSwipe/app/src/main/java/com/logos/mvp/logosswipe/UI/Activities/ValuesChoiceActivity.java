@@ -1,8 +1,8 @@
 package com.logos.mvp.logosswipe.UI.activities;
 
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
@@ -35,7 +35,7 @@ public class ValuesChoiceActivity extends ActionBarActivity implements ValuesCho
         }
         if (savedInstanceState == null) {
 
-            FragmentManager fragmentManager = getFragmentManager();
+            FragmentManager fragmentManager = getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             Long problemId = -1L;
             if (getIntent().getExtras() != null) {
@@ -50,7 +50,7 @@ public class ValuesChoiceActivity extends ActionBarActivity implements ValuesCho
 
     @Override
     public void onBackPressed() {
-        ValuesChoiceFragment fragment =(ValuesChoiceFragment) getFragmentManager().findFragmentByTag(ValuesChoiceFragment.TAG);
+        ValuesChoiceFragment fragment =(ValuesChoiceFragment) getSupportFragmentManager().findFragmentByTag(ValuesChoiceFragment.TAG);
         if(fragment != null && fragment.isItemSelected()){
             fragment.resetSelection();
             return;

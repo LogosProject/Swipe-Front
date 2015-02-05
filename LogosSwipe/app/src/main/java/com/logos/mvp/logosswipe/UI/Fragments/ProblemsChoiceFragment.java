@@ -1,10 +1,9 @@
 package com.logos.mvp.logosswipe.UI.fragments;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,15 +11,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.logos.mvp.logosswipe.App;
 import com.logos.mvp.logosswipe.R;
-import com.logos.mvp.logosswipe.UI.adapters.GenericHeaderAdapter;
 import com.logos.mvp.logosswipe.UI.adapters.ProblemsChoiceAdapter;
 import com.logos.mvp.logosswipe.UI.dialogs.CreationDialog;
 import com.logos.mvp.logosswipe.network.RequestQueueSingleton;
@@ -48,7 +44,7 @@ import greendao.ProblemDao;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class ProblemsChoiceFragment extends Fragment  {
+public class ProblemsChoiceFragment extends Fragment {
     public static final String TAG="ProblemsChoiceFragment";
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -93,7 +89,7 @@ public class ProblemsChoiceFragment extends Fragment  {
         ProblemDao problemDao = App.getInstance().getSession().getProblemDao();
         QueryBuilder qb = problemDao.queryBuilder();
         List problems = qb.list();
-        mAdapter = new ProblemsChoiceAdapter(new String("Problématiques"),new ArrayList<Problem>(problems),R.layout.header_item);
+        mAdapter = new ProblemsChoiceAdapter(new String("Problématiques"),new ArrayList<Problem>(problems),R.layout.item_header);
         launchRequest();
 
     }

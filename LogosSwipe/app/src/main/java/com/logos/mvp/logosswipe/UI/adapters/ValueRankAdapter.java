@@ -4,7 +4,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -13,7 +12,6 @@ import com.logos.mvp.logosswipe.R;
 import java.util.ArrayList;
 
 import greendao.Problem;
-import greendao.Solution;
 import greendao.Value;
 import greendao.ValueScore;
 
@@ -30,7 +28,7 @@ public class ValueRankAdapter extends GenericHeaderAdapter<Value, Problem> {
 
 
     public ValueRankAdapter(Problem headerObject, ArrayList<Value> objects) {
-        super(headerObject, objects, null, R.layout.header_item, R.layout.listview_item_value_score);
+        super(headerObject, objects, null, R.layout.item_header, R.layout.listview_item_value_score);
         mValueScores= new ArrayList<>();
     }
 

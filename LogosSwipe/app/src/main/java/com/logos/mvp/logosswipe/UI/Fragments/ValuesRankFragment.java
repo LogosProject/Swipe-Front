@@ -1,9 +1,9 @@
 package com.logos.mvp.logosswipe.UI.fragments;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -40,7 +40,7 @@ import greendao.ProblemDao;
 import greendao.Value;
 import greendao.ValueDao;
 
-public class ValuesRankFragment extends Fragment{
+public class ValuesRankFragment extends Fragment {
     public static final String TAG="ValuesRankFragment";
     public static final String ARG_SOLUTION_IDS="ARG_SOLUTION_IDS";
 

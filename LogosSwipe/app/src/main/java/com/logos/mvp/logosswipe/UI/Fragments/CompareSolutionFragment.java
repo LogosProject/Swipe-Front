@@ -84,7 +84,8 @@ public class CompareSolutionFragment extends Fragment  {
     private ErrorView mErrorView;
     private OnFragmentInteractionListener mListener;
 
-    float[] hsv = {150.0f,0.5f,1.0f};
+    // float[] hsv = {150.0f,0.5f,1.0f};
+    float[] hsv = {182.0f,0.99f,56.0f};
 
 
     public static CompareSolutionFragment newInstance(long problemId,long[] valueIds, long[] solutionsIds) {

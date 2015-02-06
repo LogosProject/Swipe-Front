@@ -25,7 +25,7 @@
         android:layout_alignParentBottom="true"
         android:text="VERSUS SUIVANT"
         android:background="?android:attr/selectableItemBackground"
-        android:textColor="@color/blue"
+        android:textColor="@color/logos_dark_blue"
         />
 
     <ScrollView

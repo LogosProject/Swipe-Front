@@ -1,6 +1,8 @@
 package com.logos.mvp.logosswipe.UI.fragments;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -39,6 +41,8 @@ import greendao.Comment;
 import greendao.CommentDao;
 import greendao.Problem;
 import greendao.ProblemDao;
+import greendao.Versus;
+import greendao.VersusDao;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -50,7 +54,7 @@ import greendao.ProblemDao;
  */
 public class DebateFragment extends Fragment {
 
-    private static final String TAG = "DebateFragment";
+    public static final String TAG = "DebateFragment";
 
     private OnFragmentInteractionListener mListener;
     private CommentAdapter mAdapter;
@@ -72,65 +76,67 @@ public class DebateFragment extends Fragment {
     public DebateFragment() {
         // Required empty public constructor
     }
+    private  Versus mCurrentVersus;
 
-    public long getCurrentVersusId(){
-        if(getActivity() != null && getActivity() instanceof VersusActivity){
-            return ((VersusActivity)getActivity()).getmCurrentVersus();
-        }else{
-            return -1L;
-        }
-    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        CommentDao commentDao = App.getInstance().getSession().getCommentDao();
-        QueryBuilder qb  = commentDao.queryBuilder().where(CommentDao.Properties.VersusId.eq(getCurrentVersusId()));
-        List comment = qb.list();
-        mAdapter = new CommentAdapter(new ArrayList<Comment>(comment),R.layout.listview_item_comment);
+        mAdapter = new CommentAdapter(new ArrayList<Comment>(),R.layout.listview_item_comment);
     }
 
     public void requestComments(){
+        SharedPreferences preferences = App.getInstance().getSharedPreferences(CompareSolutionFragment.PREF_CURRENT_VERSUS, Context.MODE_PRIVATE);
+        long versusId = preferences.getLong(CompareSolutionFragment.KEY_CURRENT_VERSUS,-1L);
+        VersusDao versusDao = App.getSession().getVersusDao();
+        mCurrentVersus=versusDao.load(versusId);
+        mSwipeRefreshLayout.setRefreshing(true);
         // Instantiate the RequestQueue.
-        JsonArrayRequest jReq = new JsonArrayRequest(Requests.getVersusComments(((VersusActivity)(getActivity())).getmCurrentVersus()),
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        for (int i = 0; i < response.length(); i++) {
-                            try {
-                                Comment comment = JSONConverter.commentConverter(response.getJSONObject(i));
-                                CommentDao commentDao = App.getInstance().getSession().getCommentDao();
-                                commentDao.insertOrReplace(comment);
+        if(versusId!=-1L) {
+            JsonArrayRequest jReq = new JsonArrayRequest(Requests.getVersusComments(versusId),
+                    new Response.Listener<JSONArray>() {
+                        @Override
+                        public void onResponse(JSONArray response) {
+                            for (int i = 0; i < response.length(); i++) {
+                                try {
+                                    Comment comment = JSONConverter.commentConverter(response.getJSONObject(i));
+                                    CommentDao commentDao = App.getInstance().getSession().getCommentDao();
+                                    commentDao.insertOrReplace(comment);
 
-                            } catch (JSONException e) {
-                                Log.e(TAG, e.toString());
+                                } catch (JSONException e) {
+                                    Log.e(TAG, e.toString());
+                                }
                             }
+                            reloadComments();
                         }
-                        reloadComments();
-                    }
-                }, new Response.ErrorListener() {
+                    }, new Response.ErrorListener() {
 
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                mSwipeRefreshLayout.setRefreshing(false);
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    mSwipeRefreshLayout.setRefreshing(false);
 
-                Log.e(TAG,"VolleyError : "+ error.toString());
+                    Log.e(TAG, "VolleyError : " + error.toString());
 
-            }
-        });
-        RequestQueueSingleton.getInstance(this.getActivity().getApplicationContext()).addToRequestQueue(jReq);
+                }
+            });
+            RequestQueueSingleton.getInstance(App.getInstance().getApplicationContext()).addToRequestQueue(jReq);
+        }
     }
 
     public void reloadComments(){
         CommentDao commentDao = App.getInstance().getSession().getCommentDao();
-        QueryBuilder qb = commentDao.queryBuilder().where(CommentDao.Properties.VersusId.eq(getCurrentVersusId()));
+        QueryBuilder qb = commentDao.queryBuilder().where(CommentDao.Properties.VersusId.eq(mCurrentVersus.getId()));
         List comments = qb.list();
-        mSwipeRefreshLayout.setRefreshing(false);
-        if(mAdapter!=null) {
+        if(mAdapter==null) {
+            mAdapter = new CommentAdapter(new ArrayList<Comment>(comments),R.layout.listview_item_comment);
+        }else{
             mAdapter.setItems(new ArrayList<Comment>(comments));
             mAdapter.notifyDataSetChanged();
         }
+        mSwipeRefreshLayout.setRefreshing(false);
+        mProgress.setVisibility(View.GONE);
     }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_debate, container, false);
@@ -151,9 +157,14 @@ public class DebateFragment extends Fragment {
             public void onClick(View v) {
                     CreationDialog dialog = new CreationDialog();
                     Bundle bdl = new Bundle();
-                    //TODO : implement CreationDialog
-                    bdl.putSerializable(CreationDialog.ARG_MODE, CreationDialog.DIALOG_MODE.SOLUTION);
+                    bdl.putSerializable(CreationDialog.ARG_MODE, CreationDialog.DIALOG_MODE.COMMENT);
+                    SharedPreferences preferences = App.getInstance().getSharedPreferences(CompareSolutionFragment.PREF_CURRENT_VERSUS, Context.MODE_PRIVATE);
+                    long versusId = preferences.getLong(CompareSolutionFragment.KEY_CURRENT_VERSUS,-1L);
+                    if(versusId!=-1){
+                        bdl.putLong(CompareSolutionFragment.KEY_CURRENT_VERSUS,versusId);
+                    }
                     dialog.setArguments(bdl);
+                    dialog.setTargetFragment(DebateFragment.this,0);
                     dialog.show(getActivity().getSupportFragmentManager(), CreationDialog.TAG);
 
             }
@@ -165,16 +176,19 @@ public class DebateFragment extends Fragment {
                 requestComments();
             }
         });
-        showLoading();
+
+
         return view;
     }
 
     public void showContent(){
-        mSwipeRefreshLayout.setVisibility(View.VISIBLE);
-        mSwipeRefreshLayout.setEnabled(true);
-        mRecyclerView.setVisibility(View.VISIBLE);
-        floattingButton.setVisibility(View.VISIBLE);
-        mProgress.setVisibility(View.GONE);
+        if(mSwipeRefreshLayout != null) {
+            mSwipeRefreshLayout.setVisibility(View.VISIBLE);
+            mSwipeRefreshLayout.setEnabled(true);
+            mRecyclerView.setVisibility(View.VISIBLE);
+            floattingButton.setVisibility(View.VISIBLE);
+            mProgress.setVisibility(View.GONE);
+        }
     }
 
     public void showLoading(){
@@ -195,6 +209,7 @@ public class DebateFragment extends Fragment {
                     + " must implement OnFragmentInteractionListener");
         }
     }
+
 
     @Override
     public void onDetach() {

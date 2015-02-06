@@ -5,10 +5,22 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.logos.mvp.logosswipe.UI.fragments.CompareSolutionFragment">
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:id="@+id/bt_next_versus"
+        android:layout_alignParentBottom="true"
+        android:text="VERSUS SUIVANT"
+        android:background="?android:attr/selectableItemBackground"
+        android:textColor="@color/blue"
+        />
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
+        android:layout_above="@id/bt_next_versus"
         >
         <LinearLayout
             android:layout_width="match_parent"
@@ -16,6 +28,12 @@
             android:orientation="vertical"
             android:layout_gravity="center"
             >
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/tv_value"
+                android:gravity="center"
+                android:textSize="45sp"/>
             <com.logos.mvp.logosswipe.UI.views.SolutionView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -44,15 +62,6 @@
     </ScrollView>
 
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:id="@+id/bt_next_versus"
-        android:layout_alignParentBottom="true"
-        android:text="VERSUS SUIVANT"
-        android:background="?android:attr/selectableItemBackground"
-        android:textColor="@color/blue"
-        />
 
     <ProgressBar
         android:id="@+id/progress"

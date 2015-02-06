@@ -12,6 +12,7 @@ public class Versus {
     private Long id;
     private Long solution1Id;
     private Long solution2Id;
+    private Long valueID;
 
     /** Used to resolve relations */
     private transient DaoSession daoSession;
@@ -25,6 +26,9 @@ public class Versus {
     private Solution solution2;
     private Long solution2__resolvedKey;
 
+    private Value versusId;
+    private Long versusId__resolvedKey;
+
 
     public Versus() {
     }
@@ -33,10 +37,11 @@ public class Versus {
         this.id = id;
     }
 
-    public Versus(Long id, Long solution1Id, Long solution2Id) {
+    public Versus(Long id, Long solution1Id, Long solution2Id, Long valueID) {
         this.id = id;
         this.solution1Id = solution1Id;
         this.solution2Id = solution2Id;
+        this.valueID = valueID;
     }
 
     /** called by internal mechanisms, do not call yourself. */
@@ -67,6 +72,14 @@ public class Versus {
 
     public void setSolution2Id(Long solution2Id) {
         this.solution2Id = solution2Id;
+    }
+
+    public Long getValueID() {
+        return valueID;
+    }
+
+    public void setValueID(Long valueID) {
+        this.valueID = valueID;
     }
 
     /** To-one relationship, resolved on first access. */
@@ -116,6 +129,31 @@ public class Versus {
             this.solution2 = solution2;
             solution2Id = solution2 == null ? null : solution2.getId();
             solution2__resolvedKey = solution2Id;
+        }
+    }
+
+    /** To-one relationship, resolved on first access. */
+    public Value getVersusId() {
+        Long __key = this.valueID;
+        if (versusId__resolvedKey == null || !versusId__resolvedKey.equals(__key)) {
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            ValueDao targetDao = daoSession.getValueDao();
+            Value versusIdNew = targetDao.load(__key);
+            synchronized (this) {
+                versusId = versusIdNew;
+            	versusId__resolvedKey = __key;
+            }
+        }
+        return versusId;
+    }
+
+    public void setVersusId(Value versusId) {
+        synchronized (this) {
+            this.versusId = versusId;
+            valueID = versusId == null ? null : versusId.getId();
+            versusId__resolvedKey = valueID;
         }
     }
 

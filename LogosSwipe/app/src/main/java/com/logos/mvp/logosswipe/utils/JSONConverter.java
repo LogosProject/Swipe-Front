@@ -17,6 +17,7 @@ import greendao.SolutionDao;
 import greendao.User;
 import greendao.UserDao;
 import greendao.Value;
+import greendao.ValueDao;
 import greendao.Versus;
 import greendao.VersusDao;
 
@@ -56,7 +57,10 @@ public class JSONConverter {
         Solution solution2 = solutionConverter(new JSONObject(obj.getString("solution2")),problem.getId());
         solutionDao.insertOrReplace(solution1);
         solutionDao.insertOrReplace(solution2);
-        return new Versus(Long.parseLong(id),solution1.getId(),solution2.getId());
+        ValueDao valueDao = App.getSession().getValueDao();
+        Value value = valueConverter(new JSONObject(obj.getString("value")),problem.getId());
+        valueDao.insertOrReplace(value);
+        return new Versus(Long.parseLong(id),solution1.getId(),solution2.getId(),value.getId());
     }
 
     public static User userConverter(JSONObject obj) throws JSONException {
@@ -64,24 +68,29 @@ public class JSONConverter {
         String username = obj.getString("username");
         return new User(Long.parseLong(id),username);
     }
-
+    public static Date dateConverter(JSONObject obj) throws JSONException{
+        String millis = obj.getString("millis");
+        return new Date(Long.parseLong(millis));
+    }
     public static Comment commentConverter(JSONObject obj) throws JSONException {
         String id = obj.getString("id");
         String name = obj.getString("name");
-        Date datetime = null;
-        try {
+        Date datetime = dateConverter(new JSONObject(obj.getString("dateTime")));
+        /*try {
             datetime = ISO8601DateParser.parse(obj.getString("datetime"));
         } catch (ParseException e) {
             e.printStackTrace();
-        }
+        }*/
         String content = obj.getString("content");
         Versus versus = versusConverter(new JSONObject(obj.getString("versus")));
-        User user = userConverter(new JSONObject(obj.getString("user")));
-        VersusDao versusDao = App.getInstance().getSession().getVersusDao();
-        versusDao.insertOrReplace(versus);
-        UserDao userDao = App.getInstance().getSession().getUserDao();
-        userDao.insertOrReplace(user);
-        return new Comment(Long.parseLong(id), name, datetime,  content, -1L , versus.getId(), user.getId());
+        /*User user = userConverter(new JSONObject(obj.getString("user")));
+        if(user != null) {
+            VersusDao versusDao = App.getInstance().getSession().getVersusDao();
+            versusDao.insertOrReplace(versus);
+            UserDao userDao = App.getInstance().getSession().getUserDao();
+            userDao.insertOrReplace(user);
+        }*/
+        return new Comment(Long.parseLong(id), name, datetime,  content, -1L , versus.getId(),-1L);
 
     }
 }

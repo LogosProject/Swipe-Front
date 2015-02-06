@@ -15,6 +15,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.logos.mvp.logosswipe.R;
 import com.logos.mvp.logosswipe.UI.activities.VersusActivity;
+import com.logos.mvp.logosswipe.UI.fragments.CompareSolutionFragment;
 import com.logos.mvp.logosswipe.UI.fragments.DebateFragment;
 import com.logos.mvp.logosswipe.UI.fragments.ProblemsChoiceFragment;
 import com.logos.mvp.logosswipe.UI.fragments.SolutionsChoiceFragment;
@@ -42,11 +43,12 @@ public class CreationDialog extends DialogFragment {
         COMMENT
     }
     private DIALOG_MODE mDialogMode;
-
+    private long mCurentVersus = -1L;
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         if (getArguments()!=null){
             mDialogMode = (DIALOG_MODE)getArguments().getSerializable(ARG_MODE);
+            mCurentVersus=getArguments().getLong(CompareSolutionFragment.KEY_CURRENT_VERSUS);
         }
         View dialogView = getActivity().getLayoutInflater().inflate(R.layout.dialog_creator, null);
         mEtTitle = (EditText) dialogView.findViewById(R.id.et_title);
@@ -69,7 +71,7 @@ public class CreationDialog extends DialogFragment {
                         url=Requests.postSolutionProblemUrl(((SolutionsChoiceFragment) getTargetFragment()).getProblemId());
                         break;
                     case COMMENT:
-                        url=Requests.postCommentVersusUrl(((VersusActivity)((getTargetFragment()).getActivity())).getmCurrentVersus());
+                        url=Requests.postCommentVersusUrl(mCurentVersus);
                         break;
                 }
                 StringRequest postRequest = new StringRequest(Request.Method.POST,url,
@@ -111,7 +113,12 @@ public class CreationDialog extends DialogFragment {
                     {
                         Map<String, String>  params = new HashMap<String, String>();
                         params.put("name", mEtTitle.getText().toString());
-                        params.put("description", mEtDescription.getText().toString());
+                        if(mDialogMode!=DIALOG_MODE.COMMENT) {
+                            params.put("description", mEtDescription.getText().toString());
+                        }else {
+                            params.put("content", mEtDescription.getText().toString());
+                            params.put("userId",Requests.USER_ID);
+                        }
 
                         return params;
                     }

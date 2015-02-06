@@ -172,7 +172,7 @@ public class SolutionsChoiceFragment extends Fragment implements GenericHeaderAd
     }
 
     public void publishSelection(){
-        StringRequest postRequest = new StringRequest(Request.Method.POST, Requests.postSolutionsSelectedUrl(mProblemId),
+        StringRequest postRequest = new StringRequest(Request.Method.POST, Requests.postSolutionsSelectedUrl(mProblemId,mAdapter.getmSelectedObjects()),
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -198,16 +198,14 @@ public class SolutionsChoiceFragment extends Fragment implements GenericHeaderAd
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<String, String>();
-                for(int i=0;i<mAdapter.getmSelectedObjects().size();i++){
-                    params.put("solutionsId", String.valueOf(mAdapter.getmSelectedObjects().get(i).getId()));
-                    Log.d(TAG,"solutionsId : "+String.valueOf(mAdapter.getmSelectedObjects().get(i).getId()));
-                }
+
                 //TODO : correct this
                 params.put("userId", Requests.USER_ID);
 
                 return params;
             }
         };
+        Log.d(TAG,postRequest.getUrl().toString());
         RequestQueueSingleton.getInstance(getActivity().getApplicationContext()).addToRequestQueue(postRequest);
     }
     public void launchRequest(){
@@ -280,7 +278,7 @@ public class SolutionsChoiceFragment extends Fragment implements GenericHeaderAd
 
     @Override
     public void onItemsSelected() {
-        if(mAdapter.getmSelectedObjects().isEmpty()){
+        if(mAdapter.getmSelectedObjects().size()<2){
             floattingButton.setImageResource(R.drawable.ic_content_add);
             isItemSelected=false;
         }else{

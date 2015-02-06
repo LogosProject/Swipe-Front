@@ -190,7 +190,6 @@ public class ValuesRankFragment extends Fragment {
             }
             nextIntent.putExtra(ValuesRankFragment.ARG_SOLUTION_IDS, array);
             getActivity().startActivity(nextIntent);
-
         }
 
     }

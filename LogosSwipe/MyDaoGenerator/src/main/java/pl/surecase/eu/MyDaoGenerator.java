@@ -125,6 +125,9 @@ public class MyDaoGenerator {
         Property versusId2 = versus.addLongProperty("solution2Id").getProperty();
         versus.addToOne(solution, versusId2,"solution2");
 
+        Property versusId3 = versus.addLongProperty("valueID").getProperty();
+        versus.addToOne(value,versusId3,"versusId");
+
         // ** VersusResponse **//
 
         Property versusResponseId = versusResponse.addLongProperty("versusId").getProperty();

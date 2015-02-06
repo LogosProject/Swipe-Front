@@ -29,6 +29,7 @@ public class VersusDao extends AbstractDao<Versus, Long> {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
         public final static Property Solution1Id = new Property(1, Long.class, "solution1Id", false, "SOLUTION1_ID");
         public final static Property Solution2Id = new Property(2, Long.class, "solution2Id", false, "SOLUTION2_ID");
+        public final static Property ValueID = new Property(3, Long.class, "valueID", false, "VALUE_ID");
     };
 
     private DaoSession daoSession;
@@ -49,7 +50,8 @@ public class VersusDao extends AbstractDao<Versus, Long> {
         db.execSQL("CREATE TABLE " + constraint + "'VERSUS' (" + //
                 "'_id' INTEGER PRIMARY KEY ," + // 0: id
                 "'SOLUTION1_ID' INTEGER," + // 1: solution1Id
-                "'SOLUTION2_ID' INTEGER);"); // 2: solution2Id
+                "'SOLUTION2_ID' INTEGER," + // 2: solution2Id
+                "'VALUE_ID' INTEGER);"); // 3: valueID
     }
 
     /** Drops the underlying database table. */
@@ -77,6 +79,11 @@ public class VersusDao extends AbstractDao<Versus, Long> {
         if (solution2Id != null) {
             stmt.bindLong(3, solution2Id);
         }
+ 
+        Long valueID = entity.getValueID();
+        if (valueID != null) {
+            stmt.bindLong(4, valueID);
+        }
     }
 
     @Override
@@ -97,7 +104,8 @@ public class VersusDao extends AbstractDao<Versus, Long> {
         Versus entity = new Versus( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.isNull(offset + 1) ? null : cursor.getLong(offset + 1), // solution1Id
-            cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2) // solution2Id
+            cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2), // solution2Id
+            cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3) // valueID
         );
         return entity;
     }
@@ -108,6 +116,7 @@ public class VersusDao extends AbstractDao<Versus, Long> {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setSolution1Id(cursor.isNull(offset + 1) ? null : cursor.getLong(offset + 1));
         entity.setSolution2Id(cursor.isNull(offset + 2) ? null : cursor.getLong(offset + 2));
+        entity.setValueID(cursor.isNull(offset + 3) ? null : cursor.getLong(offset + 3));
      }
     
     /** @inheritdoc */
@@ -143,9 +152,12 @@ public class VersusDao extends AbstractDao<Versus, Long> {
             SqlUtils.appendColumns(builder, "T0", daoSession.getSolutionDao().getAllColumns());
             builder.append(',');
             SqlUtils.appendColumns(builder, "T1", daoSession.getSolutionDao().getAllColumns());
+            builder.append(',');
+            SqlUtils.appendColumns(builder, "T2", daoSession.getValueDao().getAllColumns());
             builder.append(" FROM VERSUS T");
             builder.append(" LEFT JOIN SOLUTION T0 ON T.'SOLUTION1_ID'=T0.'_id'");
             builder.append(" LEFT JOIN SOLUTION T1 ON T.'SOLUTION2_ID'=T1.'_id'");
+            builder.append(" LEFT JOIN VALUE T2 ON T.'VALUE_ID'=T2.'_id'");
             builder.append(' ');
             selectDeep = builder.toString();
         }
@@ -162,6 +174,10 @@ public class VersusDao extends AbstractDao<Versus, Long> {
 
         Solution solution2 = loadCurrentOther(daoSession.getSolutionDao(), cursor, offset);
         entity.setSolution2(solution2);
+        offset += daoSession.getSolutionDao().getAllColumns().length;
+
+        Value versusId = loadCurrentOther(daoSession.getValueDao(), cursor, offset);
+        entity.setVersusId(versusId);
 
         return entity;    
     }

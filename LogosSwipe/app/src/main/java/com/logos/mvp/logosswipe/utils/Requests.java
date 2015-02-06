@@ -1,5 +1,7 @@
 package com.logos.mvp.logosswipe.utils;
 
+import java.util.ArrayList;
+
 import greendao.Solution;
 
 /**
@@ -7,7 +9,7 @@ import greendao.Solution;
  */
 public class Requests {
     private static final String SERVER_URL="http://178.62.199.79:8080/swipe-back/";
-    public static final String USER_ID="107";
+    public static final String USER_ID="1";
 
     // ** GET **//
     public static String getProblemsUrl(){
@@ -21,7 +23,7 @@ public class Requests {
     }
 
     public static String getNextVersusProblem(long problemId){
-        return getProblemsUrl()+"/"+problemId+"/versus/next/?userId=107";
+        return getProblemsUrl()+"/"+problemId+"/versus/next/?userId="+USER_ID;
     }
     public static String getVersusComments(long versusId){
         return SERVER_URL+"versus/"+versusId+"/comments";
@@ -43,11 +45,20 @@ public class Requests {
         return postProblemUrl()+"/"+problemId+"/solutions";
     }
 
-    public static String postSolutionsSelectedUrl(long problemId){
-        return postProblemUrl()+"/"+problemId+"/solutions/select";
+    public static String postSolutionsSelectedUrl(long problemId, ArrayList<Solution> solutions){
+        String ret= postProblemUrl()+"/"+problemId+"/solutions/select";
+        ret+="/?userId="+USER_ID;
+        for(int i=0;i<solutions.size();i++){
+            ret+="&solutionsId="+solutions.get(i).getId();
+        }
+        return ret;
     }
     public static String postValueScoreUrl(Long valueId){
         return SERVER_URL+"values/"+valueId+"/valuescores";
+    }
+
+    public static String postVersusScoreUrl(Long versusId){
+        return SERVER_URL+"versus/"+versusId+"/versusresponses";
     }
 
 }

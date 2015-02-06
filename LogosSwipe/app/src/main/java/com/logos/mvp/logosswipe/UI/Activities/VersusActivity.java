@@ -2,7 +2,9 @@ package com.logos.mvp.logosswipe.UI.activities;
 
 import java.util.Locale;
 
+import android.app.ActionBar;
 import android.net.Uri;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
@@ -23,6 +25,7 @@ import com.logos.mvp.logosswipe.UI.fragments.SolutionsChoiceFragment;
 import com.logos.mvp.logosswipe.UI.fragments.ValuesChoiceFragment;
 import com.logos.mvp.logosswipe.UI.fragments.ValuesRankFragment;
 
+import greendao.Versus;
 import it.neokree.materialtabs.MaterialTab;
 import it.neokree.materialtabs.MaterialTabHost;
 import it.neokree.materialtabs.MaterialTabListener;
@@ -46,8 +49,13 @@ public class VersusActivity extends ActionBarActivity implements DebateFragment.
 
     MaterialTabHost tabHost;
 
-    long mCurrentVersus=-1;
+    long mCurrentVersusId=-1;
 
+    public Versus getmCurrentVersus() {
+        return mCurrentVersus;
+    }
+
+    Versus mCurrentVersus;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +96,14 @@ public class VersusActivity extends ActionBarActivity implements DebateFragment.
             public void onPageSelected(int position) {
                 // when user do a swipe the selected tab change
                 tabHost.setSelectedNavigationItem(position);
+                if(position==1 ){
+                    Fragment page = getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.pager + ":" + position);
+                    // based on the current position you can then cast the page to the correct
+                    // class and call the method:
+                    if ( page != null) {
+                        ((DebateFragment)page).requestComments();
+                    }
+                }
             }
         });
 
@@ -147,6 +163,12 @@ public class VersusActivity extends ActionBarActivity implements DebateFragment.
 
     }
 
+    @Override
+    public void onNextVersusReceived(Versus versus) {
+        mCurrentVersus=versus;
+
+    }
+
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -171,7 +193,8 @@ public class VersusActivity extends ActionBarActivity implements DebateFragment.
                 case 0:
                     return CompareSolutionFragment.newInstance(problemId,valueIds,solutionsIds);
                 case 1:
-                    return DebateFragment.newInstance("", "");
+                    return  DebateFragment.newInstance("", "");
+
                 default:
                     return null;
             }
@@ -196,12 +219,14 @@ public class VersusActivity extends ActionBarActivity implements DebateFragment.
         }
     }
 
-    public long getmCurrentVersus() {
-        return mCurrentVersus;
+    public long getmCurrentVersusId() {
+        return mCurrentVersusId;
     }
 
-    public void setmCurrentVersus(long mCurrentVersus) {
-        this.mCurrentVersus = mCurrentVersus;
+    public void setmCurrentVersusId(long mCurrentVersusId) {
+        this.mCurrentVersusId = mCurrentVersusId;
     }
+
+
 
 }

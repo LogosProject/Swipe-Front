@@ -1,6 +1,9 @@
 package com.logos.mvp.logosswipe.UI.fragments;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.support.v4.app.Fragment;
 import android.net.Uri;
@@ -14,13 +17,16 @@ import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.logos.mvp.logosswipe.App;
 import com.logos.mvp.logosswipe.R;
+import com.logos.mvp.logosswipe.UI.activities.SolutionsPresentationActivity;
 import com.logos.mvp.logosswipe.UI.activities.ValuesChoiceActivity;
+import com.logos.mvp.logosswipe.UI.activities.ValuesRankActivity;
 import com.logos.mvp.logosswipe.UI.views.SolutionView;
 import com.logos.mvp.logosswipe.network.RequestQueueSingleton;
 import com.logos.mvp.logosswipe.utils.JSONConverter;
@@ -29,6 +35,7 @@ import com.logos.mvp.logosswipe.utils.Requests;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.StringReader;
 import java.util.HashMap;
@@ -38,7 +45,10 @@ import greendao.Problem;
 import greendao.ProblemDao;
 import greendao.Solution;
 import greendao.SolutionDao;
+import greendao.Value;
+import greendao.ValueDao;
 import greendao.Versus;
+import greendao.VersusDao;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -50,6 +60,9 @@ import greendao.Versus;
  */
 public class CompareSolutionFragment extends Fragment {
     private static final String TAG = "CompareSolutionFragment";
+    public static final String PREF_CURRENT_VERSUS = "PREF_CURRENT_VERSUS" ;
+    public static final String KEY_CURRENT_VERSUS = "KEY_CURRENT_VERSUS" ;
+
 
 
     private long problemId = -1L;
@@ -61,6 +74,8 @@ public class CompareSolutionFragment extends Fragment {
     private ProgressBar mProgress;
     private SeekBar mSeekbar;
     private Button mNextVersus;
+    private TextView mValueTitle;
+
     private OnFragmentInteractionListener mListener;
 
     float[] hsv = {150.0f,0.5f,1.0f};
@@ -99,22 +114,21 @@ public class CompareSolutionFragment extends Fragment {
         mSolutionViewDown =(SolutionView) view.findViewById(R.id.solution_down);
         mProgress = (ProgressBar) view.findViewById(R.id.progress);
         mSeekbar = (SeekBar) view.findViewById(R.id.mySeekBar);
+        mValueTitle = (TextView) view.findViewById(R.id.tv_value);
         mSeekbar.setMax(100);
         mSeekbar.setProgress(50);
         mSolutionViewUp.setBackgroundColor(Color.HSVToColor(hsv));
+
         mSolutionViewDown.setBackgroundColor(Color.HSVToColor(hsv));
         mSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                Log.d(TAG,""+progress);
                 float saturation = ((100.0f-progress)/100.0f);
-                Log.d(TAG,""+saturation);
                 hsv[1]=saturation;
                 mSolutionViewUp.setBackgroundColor(Color.HSVToColor(hsv));
                 saturation = ((progress)/100.0f);
                 hsv[1]=saturation;
                 mSolutionViewDown.setBackgroundColor(Color.HSVToColor(hsv));
-
             }
 
             @Override
@@ -131,7 +145,8 @@ public class CompareSolutionFragment extends Fragment {
         mNextVersus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Log.d(TAG,"NEXT VERSUS");
+                postVersusResponse();
             }
         });
         launchVersusRequest();
@@ -154,6 +169,51 @@ public class CompareSolutionFragment extends Fragment {
         mProgress.setVisibility(View.VISIBLE);
         mProgress.setIndeterminate(true);
     }
+    public double getScore(){
+        double res = (((double)mSeekbar.getProgress())/10.0f)-5.0f;
+        Log.d(TAG,"Score : " +res);
+        return res;
+    }
+    public void postVersusResponse(){
+        showLoading();
+        SharedPreferences preferences = App.getInstance().getSharedPreferences(CompareSolutionFragment.PREF_CURRENT_VERSUS, Context.MODE_PRIVATE);
+        long versusId = preferences.getLong(CompareSolutionFragment.KEY_CURRENT_VERSUS, -1L);
+        if(versusId == -1L){
+            Log.e(TAG,"ERROR : versusId null");
+        }
+        StringRequest postRequest = new StringRequest(Request.Method.POST,Requests.postVersusScoreUrl(versusId),
+                new Response.Listener<String>()
+                {
+                    @Override
+                    public void onResponse(String response) {
+
+                        Log.d("PostVersusResponse", response.toString());
+                        launchVersusRequest();
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.d("Error.Response", error.toString());
+                    }
+                } )
+        {
+            @Override
+            protected Map<String, String> getParams()
+            {
+                Map<String, String>  params = new HashMap<String, String>();
+                params.put("response",String.valueOf(getScore()));
+                params.put("userId",Requests.USER_ID);
+
+
+                return params;
+            }
+        };
+        RequestQueueSingleton.getInstance(getActivity().getApplicationContext()).addToRequestQueue(postRequest);
+
+    }
 
     public void launchVersusRequest(){
         // Instantiate the RequestQueue.
@@ -171,6 +231,29 @@ public class CompareSolutionFragment extends Fragment {
                                 mSolutionViewUp.setContent(solution1.getDescription());
                                 mSolutionViewDown.setTitle(solution2.getName());
                                 mSolutionViewDown.setContent(solution2.getDescription());
+                                VersusDao versusDao= App.getSession().getVersusDao();
+                                versusDao.insertOrReplace(versus);
+                                SharedPreferences preferences = App.getInstance().getSharedPreferences(PREF_CURRENT_VERSUS, Context.MODE_PRIVATE);
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putLong(KEY_CURRENT_VERSUS,versus.getId());
+                                editor.commit();
+
+                                ValueDao valueDao = App.getSession().getValueDao();
+                                Value value = valueDao.load(versus.getValueID());
+                                mValueTitle.setText(value.getName());
+                                if(mListener != null) {
+                                    mListener.onNextVersusReceived(versus);
+                                }
+                            }else{
+                                Intent nextIntent = new Intent(getActivity(), SolutionsPresentationActivity.class);
+                                //nextIntent.putExtra(ValuesChoiceFragment.ARG_PROBLEM_ID, mProblemId);
+                                //nextIntent.putExtra(SolutionsChoiceFragment.ARG_VALUE_IDS, mValueIds);
+                                //long[] array = new long[mAdapter.getmSelectedObjects().size()];
+                                //for(int i = 0; i< mAdapter.getmSelectedObjects().size();i++){
+                                //    array[i]=mAdapter.getmSelectedObjects().get(i).getId();
+                                //}
+                                //nextIntent.putExtra(ValuesRankFragment.ARG_SOLUTION_IDS, array);
+                                getActivity().startActivity(nextIntent);
                             }
                             showContent();
                         } catch (JSONException e) {
@@ -188,6 +271,7 @@ public class CompareSolutionFragment extends Fragment {
 
             }
         });
+        Log.d(TAG,jReq.getUrl().toString());
         RequestQueueSingleton.getInstance(this.getActivity().getApplicationContext()).addToRequestQueue(jReq);
 
     }
@@ -211,8 +295,7 @@ public class CompareSolutionFragment extends Fragment {
 
 
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        public void onFragmentInteraction(Uri uri);
+        public void onNextVersusReceived(Versus versus);
     }
 
 }

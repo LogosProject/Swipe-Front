@@ -11,4 +11,6 @@ Définissez votre problématique et les valeurs entrant en compte dans votre dé
 
 
 * [Wiki](https://github.com/LogosProject/Swipe-Front/wiki/)
-
+ * [Instructions d'installation](https://github.com/LogosProject/Swipe-Front/wiki/Instructions-d%27installation) : Tout le nécessaire pour pouvoir commencer à développer
+ * [Librairies externes](https://github.com/LogosProject/Swipe-Front/wiki/Librairies-externes) : Une description des librairies utilisées pour le projet
+ * [Manuel d'utilisation](https://github.com/LogosProject/Swipe-Front/wiki/Manuel-d%27utilisation) : Comment utiliser l'application

@@ -5,7 +5,19 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.logos.mvp.logosswipe.UI.fragments.CompareSolutionFragment">
-
+    <tr.xip.errorview.ErrorView xmlns:errorview="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/error_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_centerInParent="true"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        errorview:ev_errorImage="@drawable/ic_action_done_all"
+        errorview:ev_retryButtonTextColor="@color/blue"
+        errorview:ev_showRetryButton="false"
+        errorview:ev_showSubtitle="true"
+        errorview:ev_showTitle="true" />
     <Button
         android:layout_width="match_parent"
         android:layout_height="48dp"

@@ -1,15 +1,24 @@
 package com.logos.mvp.logosswipe.UI.activities;
 
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.JsonRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.github.mikephil.charting.charts.RadarChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.RadarData;
@@ -21,16 +30,31 @@ import com.github.mikephil.charting.utils.XLabels;
 import com.github.mikephil.charting.utils.YLabels;
 import com.logos.mvp.logosswipe.App;
 import com.logos.mvp.logosswipe.R;
+import com.logos.mvp.logosswipe.UI.fragments.SolutionsChoiceFragment;
+import com.logos.mvp.logosswipe.UI.fragments.ValuesChoiceFragment;
 import com.logos.mvp.logosswipe.UI.views.MyMarkerView;
+import com.logos.mvp.logosswipe.network.RequestQueueSingleton;
+import com.logos.mvp.logosswipe.utils.JSONConverter;
+import com.logos.mvp.logosswipe.utils.Requests;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import de.greenrobot.dao.query.QueryBuilder;
 import greendao.Problem;
 import greendao.ProblemDao;
 import greendao.Solution;
 import greendao.SolutionDao;
+import greendao.SolutionScore;
+import greendao.SolutionScoreDao;
 import greendao.Value;
 import greendao.ValueDao;
 import greendao.ValueScore;
@@ -40,8 +64,10 @@ import greendao.ValueSolutionScoreDao;
 
 public class SolutionsPresentationActivity extends ActionBarActivity {
 
+    private static final String TAG = "SolPresentationActivity";
     private RadarChart mChart;
-
+    private long mProblemId;
+    private Typeface tf;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,9 +86,13 @@ public class SolutionsPresentationActivity extends ActionBarActivity {
             // Inflate a menu to be displayed in the toolbar
             //     actionbar.inflateMenu(R.menu.settings);
         }
+        mProblemId = -1L;
+        if (getIntent().getExtras() != null) {
+            mProblemId = getIntent().getExtras().getLong(ValuesChoiceFragment.ARG_PROBLEM_ID);
+        }
         mChart = (RadarChart) findViewById(R.id.chart1);
 
-        Typeface tf = Typeface.createFromAsset(getAssets(), "Roboto-Medium.ttf");
+        tf = Typeface.createFromAsset(getAssets(), "Roboto-Medium.ttf");
 
         mChart.setValueTypeface(tf);
 
@@ -83,25 +113,26 @@ public class SolutionsPresentationActivity extends ActionBarActivity {
         // set the marker to the chart
         mChart.setMarkerView(mv);
 
-        setData();
 
+        int count = setData();
         XLabels xl = mChart.getXLabels();
         xl.setTypeface(tf);
         xl.setTextSize(9f);
 
         YLabels yl = mChart.getYLabels();
         yl.setTypeface(tf);
-        yl.setLabelCount(5);
+        yl.setLabelCount(2);
         yl.setTextSize(9f);
-        yl.setDrawUnitsInYLabel(true);
+        yl.setDrawUnitsInYLabel(false);
 
         // mChart.animateXY(1500, 1500);
 
         Legend l = mChart.getLegend();
-        l.setPosition(LegendPosition.BELOW_CHART_CENTER);
+        l.setPosition(LegendPosition.RIGHT_OF_CHART);
         l.setTypeface(tf);
         l.setXEntrySpace(7f);
         l.setYEntrySpace(5f);
+
     }
 
     @Override
@@ -185,66 +216,70 @@ public class SolutionsPresentationActivity extends ActionBarActivity {
         return true;
     }
 
-    private String[] mParties = new String[] {
-            "Party A", "Party B", "Party C", "Party D", "Party E", "Party F", "Party G", "Party H",
-            "Party I"
-    };
 
-    public void insertMockData(){
+
+    public int setData() {
+        //insertMockData();
+
         ValueSolutionScoreDao valueSolutionScoreDao = App.getSession().getValueSolutionScoreDao();
-        ValueScoreDao valueScoreDao = App.getSession().getValueScoreDao();
         ValueDao valueDao = App.getSession().getValueDao();
+        SolutionScoreDao solutionScoreDao = App.getSession().getSolutionScoreDao();
         SolutionDao solutionDao = App.getSession().getSolutionDao();
         ProblemDao problemDao = App.getSession().getProblemDao();
 
         // ** Get a problem **//
-        QueryBuilder<Problem> queryBuilder = problemDao.queryBuilder().where(ProblemDao.Properties.Id.eq(5));
-        Problem problem = queryBuilder.list().get(0);
+        Problem problem = problemDao.load(mProblemId);
 
         // ** Get its solutions ** //
-        QueryBuilder<Solution> queryBuilder1 = solutionDao.queryBuilder().where(SolutionDao.Properties.ProblemId.eq(problem.getId()));
+        QueryBuilder<Solution> queryBuilder1 = solutionDao.queryBuilder().where(SolutionDao.Properties.ProblemId.eq(mProblemId));
         List<Solution> solutions=queryBuilder1.list();
 
         // ** Get its values **//
-        QueryBuilder<Value> queryBuilder2 = valueDao.queryBuilder().where(ValueDao.Properties.ProblemId.eq(problem.getId()));
+        QueryBuilder<Value> queryBuilder2 = valueDao.queryBuilder().where(ValueDao.Properties.ProblemId.eq(mProblemId));
         List<Value> values = queryBuilder2.list();
 
-        // ** Get value's valueScores **//
-        valueSolutionScoreDao.insertOrReplace(new ValueSolutionScore(1L,15.0, values.get(0).getId(),null,solutions.get(0).getId()));
-        valueScoreDao.insertOrReplace(new ValueScore(1L, 5.0,values.get(0).getId() ,null));
-        valueScoreDao.insertOrReplace(new ValueScore(2L, 5.0,values.get(0).getId() ,null));
-        valueScoreDao.insertOrReplace(new ValueScore(3L, 5.0,values.get(0).getId() ,null));
+        // *Get ValueSolutionsScores **//
+        QueryBuilder<ValueSolutionScore> queryBuilder3 = valueSolutionScoreDao.queryBuilder().where(ValueSolutionScoreDao.Properties.UserId.eq(Requests.USER_ID));
+        List<ValueSolutionScore> valueSolutionScore = queryBuilder3.list();
 
-    }
+        //** Get SolutionsScore **//
+        QueryBuilder<SolutionScore> queryBuilder4 = solutionScoreDao.queryBuilder().where(SolutionScoreDao.Properties.UserId.eq(Requests.USER_ID));
+        List<SolutionScore> solutionScores = queryBuilder4.list();
 
-    public void setData() {
-        insertMockData();
+        // Finding XVals
+        ArrayList<String> xVals = new ArrayList<String>();
+        //HashMap<String,Long> map = new HashMap<String, Long>();
 
-        int nbSolutions = 1;
-        ValueSolutionScoreDao valueSolutionScoreDao = App.getSession().getValueSolutionScoreDao();
-        ValueScoreDao valueScoreDao = App.getSession().getValueScoreDao();
-        ValueDao valueDao = App.getSession().getValueDao();
-        SolutionDao solutionDao = App.getSession().getSolutionDao();
-        ProblemDao problemDao = App.getSession().getProblemDao();
+        for(int i = 0; i< valueSolutionScore.size(); i++){
+            String name = valueDao.load(valueSolutionScore.get(i).getValueId()).getName();
+            if(!xVals.contains(name)){
+                xVals.add(name);
+                //map.put(name,valueSolutionScore.get(i).getValueId());
+            }
+        }
 
-        // ** Get a problem **//
-        QueryBuilder<Problem> queryBuilder = problemDao.queryBuilder().where(ProblemDao.Properties.Id.eq(5));
-        Problem problem = queryBuilder.list().get(0);
 
-        // ** Get its solutions ** //
-        QueryBuilder<Solution> queryBuilder1 = solutionDao.queryBuilder().where(SolutionDao.Properties.ProblemId.eq(problem.getId()));
-        List<Solution> solutions=queryBuilder1.list();
 
-        // ** Get its values **//
-        QueryBuilder<Value> queryBuilder2 = valueDao.queryBuilder().where(ValueDao.Properties.ProblemId.eq(problem.getId()));
-        List<Value> values = queryBuilder2.list();
+        ArrayList<RadarDataSet> sets = new ArrayList<RadarDataSet>();
+        for(int i = 0 ; i<solutionScores.size();i++){
+            ArrayList<Entry> yVals = new ArrayList<Entry>();
+            for(int j= 0; j<valueSolutionScore.size();j++){
+                if(solutionScores.get(i).getSolutionId()==valueSolutionScore.get(j).getSolutionId()) {
+                    String name = valueDao.load(valueSolutionScore.get(j).getValueId()).getName();
+                    yVals.add(new Entry((float) (double) valueSolutionScore.get(j).getScore(), xVals.indexOf(name)));
+                }
+            }
+            String solutionName = App.getSession().getSolutionDao().load(solutionScores.get(i).getSolutionId()).getName();
+            RadarDataSet set1 = new RadarDataSet(yVals, solutionName);
+            set1.setColor(ColorTemplate.VORDIPLOM_COLORS[i % ColorTemplate.VORDIPLOM_COLORS.length]);
+            set1.setDrawFilled(true);
+            set1.setLineWidth(3f);
+            sets.add(set1);
+        }
 
-        ValueSolutionScore valueSolutionScore = valueSolutionScoreDao.load(1L);
 
-        float mult = 150;
-        int cnt = 3;
 
-        ArrayList<Entry> yVals1 = new ArrayList<Entry>();
+       /* ArrayList<Entry> yVals1 = new ArrayList<Entry>();
         ArrayList<Entry> yVals2 = new ArrayList<Entry>();
 
         // IMPORTANT: In a PieChart, no values (Entry) should have the same
@@ -258,10 +293,6 @@ public class SolutionsPresentationActivity extends ActionBarActivity {
             yVals2.add(new Entry((float) (Math.random() * mult) + mult / 2, i));
         }
 
-        ArrayList<String> xVals = new ArrayList<String>();
-
-        for (int i = 0; i < cnt; i++)
-            xVals.add(mParties[i % mParties.length]);
 
         RadarDataSet set1 = new RadarDataSet(yVals1, "Set 1");
         set1.setColor(ColorTemplate.VORDIPLOM_COLORS[0]);
@@ -273,9 +304,8 @@ public class SolutionsPresentationActivity extends ActionBarActivity {
         set2.setDrawFilled(true);
         set2.setLineWidth(3f);
 
-        ArrayList<RadarDataSet> sets = new ArrayList<RadarDataSet>();
         sets.add(set1);
-        sets.add(set2);
+        sets.add(set2);*/
 
         RadarData data = new RadarData(xVals, sets);
 
@@ -285,5 +315,7 @@ public class SolutionsPresentationActivity extends ActionBarActivity {
         mChart.highlightValues(null);
 
         mChart.invalidate();
+        return sets.size();
+
     }
 }

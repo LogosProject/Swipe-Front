@@ -45,10 +45,16 @@ import greendao.Problem;
 import greendao.ProblemDao;
 import greendao.Solution;
 import greendao.SolutionDao;
+import greendao.SolutionScore;
+import greendao.SolutionScoreDao;
 import greendao.Value;
 import greendao.ValueDao;
+import greendao.ValueSolutionScore;
+import greendao.ValueSolutionScoreDao;
 import greendao.Versus;
 import greendao.VersusDao;
+import tr.xip.errorview.ErrorView;
+import tr.xip.errorview.RetryListener;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -58,7 +64,7 @@ import greendao.VersusDao;
  * Use the {@link CompareSolutionFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class CompareSolutionFragment extends Fragment {
+public class CompareSolutionFragment extends Fragment  {
     private static final String TAG = "CompareSolutionFragment";
     public static final String PREF_CURRENT_VERSUS = "PREF_CURRENT_VERSUS" ;
     public static final String KEY_CURRENT_VERSUS = "KEY_CURRENT_VERSUS" ;
@@ -75,7 +81,7 @@ public class CompareSolutionFragment extends Fragment {
     private SeekBar mSeekbar;
     private Button mNextVersus;
     private TextView mValueTitle;
-
+    private ErrorView mErrorView;
     private OnFragmentInteractionListener mListener;
 
     float[] hsv = {150.0f,0.5f,1.0f};
@@ -118,7 +124,16 @@ public class CompareSolutionFragment extends Fragment {
         mSeekbar.setMax(100);
         mSeekbar.setProgress(50);
         mSolutionViewUp.setBackgroundColor(Color.HSVToColor(hsv));
+        mErrorView= (ErrorView)view.findViewById(R.id.error_view);
+        mErrorView.setErrorTitle("Terminé");
+        mErrorView.setErrorSubtitle("Vous avez complété toutes les possibilités");
+        mErrorView.setOnRetryListener(new RetryListener() {
+            @Override
+            public void onRetry() {
+                Log.d(TAG,"RETRY");
 
+            }
+        });
         mSolutionViewDown.setBackgroundColor(Color.HSVToColor(hsv));
         mSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -145,8 +160,12 @@ public class CompareSolutionFragment extends Fragment {
         mNextVersus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG,"NEXT VERSUS");
-                postVersusResponse();
+                if(mErrorView.getVisibility()==View.GONE) {
+                    Log.d(TAG, "NEXT VERSUS");
+                    postVersusResponse();
+                }else{
+                    launchPresentationRequest();
+                }
             }
         });
         launchVersusRequest();
@@ -158,6 +177,7 @@ public class CompareSolutionFragment extends Fragment {
         mSolutionViewUp.setVisibility(View.VISIBLE);
         mSeekbar.setVisibility(View.VISIBLE);
         mNextVersus.setVisibility(View.VISIBLE);
+        mValueTitle.setVisibility(View.VISIBLE);
         mProgress.setVisibility(View.GONE);
     }
 
@@ -166,8 +186,19 @@ public class CompareSolutionFragment extends Fragment {
         mSolutionViewUp.setVisibility(View.GONE);
         mSeekbar.setVisibility(View.GONE);
         mNextVersus.setVisibility(View.GONE);
+        mValueTitle.setVisibility(View.GONE);
         mProgress.setVisibility(View.VISIBLE);
         mProgress.setIndeterminate(true);
+    }
+    public void showNoVersus(){
+        mSolutionViewDown.setVisibility(View.GONE);
+        mSolutionViewUp.setVisibility(View.GONE);
+        mSeekbar.setVisibility(View.GONE);
+        mNextVersus.setVisibility(View.VISIBLE);
+        mNextVersus.setText("Afficher les résultats");
+        mProgress.setVisibility(View.GONE);
+        mValueTitle.setVisibility(View.GONE);
+        mErrorView.setVisibility(View.VISIBLE);
     }
     public double getScore(){
         double res = (((double)mSeekbar.getProgress())/10.0f)-5.0f;
@@ -244,18 +275,10 @@ public class CompareSolutionFragment extends Fragment {
                                 if(mListener != null) {
                                     mListener.onNextVersusReceived(versus);
                                 }
+                                showContent();
                             }else{
-                                Intent nextIntent = new Intent(getActivity(), SolutionsPresentationActivity.class);
-                                //nextIntent.putExtra(ValuesChoiceFragment.ARG_PROBLEM_ID, mProblemId);
-                                //nextIntent.putExtra(SolutionsChoiceFragment.ARG_VALUE_IDS, mValueIds);
-                                //long[] array = new long[mAdapter.getmSelectedObjects().size()];
-                                //for(int i = 0; i< mAdapter.getmSelectedObjects().size();i++){
-                                //    array[i]=mAdapter.getmSelectedObjects().get(i).getId();
-                                //}
-                                //nextIntent.putExtra(ValuesRankFragment.ARG_SOLUTION_IDS, array);
-                                getActivity().startActivity(nextIntent);
+                               showNoVersus();
                             }
-                            showContent();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -274,6 +297,64 @@ public class CompareSolutionFragment extends Fragment {
         Log.d(TAG,jReq.getUrl().toString());
         RequestQueueSingleton.getInstance(this.getActivity().getApplicationContext()).addToRequestQueue(jReq);
 
+    }
+    public void launchPresentationRequest(){
+        // Instantiate the RequestQueue.
+        if(problemId!=-1) {
+            StringRequest jReq = new StringRequest(Requests.getSolutionsScores(problemId),
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            JSONObject object= null;
+                            try {
+                                object = new JSONObject(response);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            if(object == null){
+                                Log.d(TAG,"JSON WAS NULL");
+                                return;
+                            }
+                            ValueSolutionScoreDao valueSolutionScoreDao = App.getSession().getValueSolutionScoreDao();
+                            valueSolutionScoreDao.deleteAll();
+                            SolutionScoreDao solutionScoreDao =  App.getSession().getSolutionScoreDao();
+                            solutionScoreDao.deleteAll();
+                            try {
+                                JSONArray valueSolutionScores = object.getJSONArray("valueSolutionScore");
+                                for(int i=0;i<valueSolutionScores.length();i++){
+                                    ValueSolutionScore valueSolutionScore = JSONConverter.valueSolutionScoreConverter(valueSolutionScores.getJSONObject(i),problemId);
+                                    valueSolutionScoreDao.insertOrReplace(valueSolutionScore);
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            try {
+                                JSONArray solutionScores = object.getJSONArray("solutionScores");
+                                for(int i=0;i<solutionScores.length();i++){
+                                    SolutionScore valueSolutionScore = JSONConverter.solutionScoreConverter(solutionScores.getJSONObject(i),problemId);
+                                    solutionScoreDao.insertOrReplace(valueSolutionScore);
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            Intent nextIntent = new Intent(getActivity(), SolutionsPresentationActivity.class);
+                            nextIntent.putExtra(ValuesChoiceFragment.ARG_PROBLEM_ID, problemId);
+                            getActivity().startActivity(nextIntent);
+
+                        }
+                    }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+
+                    Log.e(TAG, "VolleyError : " + error.toString());
+
+                }
+            });
+            RequestQueueSingleton.getInstance(getActivity().getApplicationContext()).addToRequestQueue(jReq);
+        }else{
+            Log.d(TAG,"ProblemID was null");
+        }
     }
 
     @Override

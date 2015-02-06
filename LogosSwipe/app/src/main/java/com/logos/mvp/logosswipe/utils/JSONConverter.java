@@ -14,10 +14,12 @@ import greendao.Problem;
 import greendao.ProblemDao;
 import greendao.Solution;
 import greendao.SolutionDao;
+import greendao.SolutionScore;
 import greendao.User;
 import greendao.UserDao;
 import greendao.Value;
 import greendao.ValueDao;
+import greendao.ValueSolutionScore;
 import greendao.Versus;
 import greendao.VersusDao;
 
@@ -92,5 +94,30 @@ public class JSONConverter {
         }*/
         return new Comment(Long.parseLong(id), name, datetime,  content, -1L , versus.getId(),-1L);
 
+    }
+
+    public static ValueSolutionScore valueSolutionScoreConverter (JSONObject object,long problemId)throws JSONException {
+        String id = object.getString("id");
+        String score = object.getString("score");
+        Value value = valueConverter(object.getJSONObject("value"), problemId);
+        User user = userConverter(object.getJSONObject("user"));
+        Solution solution = solutionConverter(object.getJSONObject("solution"),problemId);
+        ValueDao valueDao = App.getSession().getValueDao();
+        valueDao.insertOrReplace(value);
+        App.getSession().getUserDao().insertOrReplace(user);
+        App.getSession().getSolutionDao().insertOrReplace(solution);
+        return new ValueSolutionScore(Long.parseLong(id), Double.parseDouble(score), value.getId(), user.getId(),solution.getId());
+    }
+
+    public static SolutionScore solutionScoreConverter(JSONObject object, long problemId)throws JSONException {
+        String id = object.getString("id");
+        String score = object.getString("score");
+        User user = userConverter(object.getJSONObject("user"));
+        Solution solution = solutionConverter(object.getJSONObject("solution"),problemId);
+
+        App.getSession().getUserDao().insertOrReplace(user);
+        App.getSession().getSolutionDao().insertOrReplace(solution);
+
+        return new SolutionScore(Long.parseLong(id),Double.parseDouble(score),solution.getId(),user.getId());
     }
 }
